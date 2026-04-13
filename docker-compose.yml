@@ -3,7 +3,7 @@ services:
   app:
     build: .
     ports:
-      - "3000:3000"
+      - "3456:3000"
     environment:
       DATABASE_URL: "postgresql://sentro:sentro@db:5432/sentro?schema=public"
       SESSION_SECRET: "${SESSION_SECRET:-change-me-in-production}"
@@ -18,8 +18,6 @@ services:
       POSTGRES_USER: sentro
       POSTGRES_PASSWORD: sentro
       POSTGRES_DB: sentro
-    ports:
-      - "5432:5432"
     volumes:
       - sentro-data:/var/lib/postgresql/data
     healthcheck:

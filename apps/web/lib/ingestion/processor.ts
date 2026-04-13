@@ -60,6 +60,14 @@ function toJsonOrNull(val: unknown): Prisma.NullableJsonNullValueInput | Prisma.
   return Prisma.JsonNull;
 }
 
+// Helper to read a field that may be camelCase or snake_case
+function str(event: IngestEvent, ...keys: string[]): string | null {
+  for (const k of keys) {
+    if (typeof event[k] === "string") return event[k] as string;
+  }
+  return null;
+}
+
 export async function processFlush(projectDsnToken: string, events: IngestEvent[]): Promise<void> {
   const project = await prisma.project.findUnique({ where: { dsnToken: projectDsnToken } });
   if (!project) {
@@ -70,6 +78,10 @@ export async function processFlush(projectDsnToken: string, events: IngestEvent[
   for (const event of events) {
     try {
       const type = event.type as string;
+      const runId = str(event, "runId", "run_id");
+      const stepId = str(event, "stepId", "step_id");
+      const toolCallId = str(event, "toolCallId", "tool_call_id");
+      const llmCallId = str(event, "llmCallId", "llm_call_id");
 
       switch (type) {
         case "event": {
@@ -100,11 +112,11 @@ export async function processFlush(projectDsnToken: string, events: IngestEvent[
             data: {
               projectId: project.id,
               groupId: group.id,
-              runId: typeof event.run_id === "string" ? event.run_id : null,
+              runId,
               fingerprint,
               level,
               message,
-              stackTrace: typeof event.stack_trace === "string" ? event.stack_trace : null,
+              stackTrace: str(event, "stackTrace", "stack_trace"),
               tags: toJson(event.tags),
               context: toJson(event.context),
               timestamp,
@@ -116,13 +128,12 @@ export async function processFlush(projectDsnToken: string, events: IngestEvent[
         case "run.start": {
           await prisma.agentRun.create({
             data: {
-              id: typeof event.run_id === "string" ? event.run_id : undefined,
+              id: runId ?? undefined,
               projectId: project.id,
-              agentName:
-                typeof event.agent_name === "string" ? event.agent_name : "unknown",
-              trigger: typeof event.trigger === "string" ? event.trigger : null,
-              goal: typeof event.goal === "string" ? event.goal : null,
-              model: typeof event.model === "string" ? event.model : null,
+              agentName: str(event, "agent", "agentName", "agent_name") ?? "unknown",
+              trigger: str(event, "trigger"),
+              goal: str(event, "goal"),
+              model: str(event, "model"),
               status: RunStatus.running,
               startedAt: toDate(event.timestamp),
               metadata: toJson(event.metadata),
@@ -132,28 +143,22 @@ export async function processFlush(projectDsnToken: string, events: IngestEvent[
         }
 
         case "run.end": {
-          if (typeof event.run_id !== "string") break;
+          if (!runId) break;
 
-          // Aggregate token/cost totals from llm_calls
           const llmAgg = await prisma.llmCall.aggregate({
-            where: { runId: event.run_id },
+            where: { runId },
             _sum: { totalTokens: true, cost: true },
           });
 
-          const totalTokens = llmAgg._sum.totalTokens ?? 0;
-          const totalCost = llmAgg._sum.cost ?? new Decimal(0);
-
           await prisma.agentRun.update({
-            where: { id: event.run_id },
+            where: { id: runId },
             data: {
               status: toRunStatus(event.status),
               finishedAt: toDate(event.timestamp),
-              totalTokens,
-              totalCost,
-              errorType: typeof event.error_type === "string" ? event.error_type : null,
-              errorMessage:
-                typeof event.error_message === "string" ? event.error_message : null,
-              metadata: toJson(event.metadata),
+              totalTokens: llmAgg._sum.totalTokens ?? 0,
+              totalCost: llmAgg._sum.cost ?? new Decimal(0),
+              errorType: str(event, "errorType", "error_type"),
+              errorMessage: str(event, "errorMessage", "error_message"),
             },
           });
           break;
@@ -162,11 +167,11 @@ export async function processFlush(projectDsnToken: string, events: IngestEvent[
         case "step.start": {
           await prisma.step.create({
             data: {
-              id: typeof event.step_id === "string" ? event.step_id : undefined,
-              runId: typeof event.run_id === "string" ? event.run_id : "",
+              id: stepId ?? undefined,
+              runId: runId ?? "",
               projectId: project.id,
-              sequenceNumber: toInt(event.sequence_number),
-              type: toStepType(event.step_type),
+              sequenceNumber: toInt(event.sequenceNumber ?? event.sequence_number),
+              type: toStepType(event.stepType ?? event.step_type),
               content: typeof event.content === "string" ? event.content : "",
               startedAt: toDate(event.timestamp),
               metadata: toJson(event.metadata),
@@ -176,14 +181,10 @@ export async function processFlush(projectDsnToken: string, events: IngestEvent[
         }
 
         case "step.end": {
-          if (typeof event.step_id !== "string") break;
+          if (!stepId) break;
           await prisma.step.update({
-            where: { id: event.step_id },
-            data: {
-              finishedAt: toDate(event.timestamp),
-              content: typeof event.content === "string" ? event.content : undefined,
-              metadata: toJson(event.metadata),
-            },
+            where: { id: stepId },
+            data: { finishedAt: toDate(event.timestamp) },
           });
           break;
         }
@@ -191,11 +192,11 @@ export async function processFlush(projectDsnToken: string, events: IngestEvent[
         case "tool_call.start": {
           await prisma.toolCall.create({
             data: {
-              id: typeof event.tool_call_id === "string" ? event.tool_call_id : undefined,
-              stepId: typeof event.step_id === "string" ? event.step_id : "",
-              runId: typeof event.run_id === "string" ? event.run_id : "",
+              id: toolCallId ?? undefined,
+              stepId: stepId ?? "",
+              runId: runId ?? "",
               projectId: project.id,
-              toolName: typeof event.tool_name === "string" ? event.tool_name : "unknown",
+              toolName: str(event, "toolName", "tool_name") ?? "unknown",
               input: toJson(event.input),
               output: {},
               status: CallStatus.success,
@@ -207,24 +208,23 @@ export async function processFlush(projectDsnToken: string, events: IngestEvent[
         }
 
         case "tool_call.end": {
-          if (typeof event.tool_call_id !== "string") break;
-          const toolCallStart = await prisma.toolCall.findUnique({
-            where: { id: event.tool_call_id },
+          if (!toolCallId) break;
+          const toolStart = await prisma.toolCall.findUnique({
+            where: { id: toolCallId },
             select: { startedAt: true },
           });
-          const endedAt = toDate(event.timestamp);
-          const latencyMs = toolCallStart
-            ? Math.max(0, endedAt.getTime() - toolCallStart.startedAt.getTime())
+          const toolEndedAt = toDate(event.timestamp);
+          const toolLatency = toolStart
+            ? Math.max(0, toolEndedAt.getTime() - toolStart.startedAt.getTime())
             : 0;
 
           await prisma.toolCall.update({
-            where: { id: event.tool_call_id },
+            where: { id: toolCallId },
             data: {
               output: toJson(event.output),
               status: toCallStatus(event.status),
-              latencyMs,
-              errorMessage:
-                typeof event.error_message === "string" ? event.error_message : null,
+              latencyMs: toolLatency,
+              errorMessage: str(event, "errorMessage", "error_message"),
             },
           });
           break;
@@ -233,12 +233,12 @@ export async function processFlush(projectDsnToken: string, events: IngestEvent[
         case "llm_call.start": {
           await prisma.llmCall.create({
             data: {
-              id: typeof event.llm_call_id === "string" ? event.llm_call_id : undefined,
-              stepId: typeof event.step_id === "string" ? event.step_id : "",
-              runId: typeof event.run_id === "string" ? event.run_id : "",
+              id: llmCallId ?? undefined,
+              stepId: stepId ?? "",
+              runId: runId ?? "",
               projectId: project.id,
-              model: typeof event.model === "string" ? event.model : "unknown",
-              provider: typeof event.provider === "string" ? event.provider : "unknown",
+              model: str(event, "model") ?? "unknown",
+              provider: str(event, "provider") ?? "unknown",
               promptTokens: 0,
               completionTokens: 0,
               totalTokens: 0,
@@ -253,24 +253,24 @@ export async function processFlush(projectDsnToken: string, events: IngestEvent[
         }
 
         case "llm_call.end": {
-          if (typeof event.llm_call_id !== "string") break;
-          const llmCallStart = await prisma.llmCall.findUnique({
-            where: { id: event.llm_call_id },
+          if (!llmCallId) break;
+          const llmStart = await prisma.llmCall.findUnique({
+            where: { id: llmCallId },
             select: { startedAt: true },
           });
-          const endedAt = toDate(event.timestamp);
-          const latencyMs = llmCallStart
-            ? Math.max(0, endedAt.getTime() - llmCallStart.startedAt.getTime())
+          const llmEndedAt = toDate(event.timestamp);
+          const llmLatency = llmStart
+            ? Math.max(0, llmEndedAt.getTime() - llmStart.startedAt.getTime())
             : 0;
 
           await prisma.llmCall.update({
-            where: { id: event.llm_call_id },
+            where: { id: llmCallId },
             data: {
-              promptTokens: toInt(event.prompt_tokens),
-              completionTokens: toInt(event.completion_tokens),
-              totalTokens: toInt(event.total_tokens),
+              promptTokens: toInt(event.promptTokens ?? event.prompt_tokens),
+              completionTokens: toInt(event.completionTokens ?? event.completion_tokens),
+              totalTokens: toInt(event.totalTokens ?? event.total_tokens),
               cost: new Decimal(String(event.cost ?? 0)),
-              latencyMs,
+              latencyMs: llmLatency,
               response: toJsonOrNull(event.response),
             },
           });

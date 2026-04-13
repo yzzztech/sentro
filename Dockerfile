@@ -33,9 +33,15 @@ WORKDIR /app
 ENV NODE_ENV=production
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
+
+# Standalone output with outputFileTracingRoot=monorepo root:
+#   standalone/node_modules/       (minimal deps)
+#   standalone/apps/web/server.js  (entry point)
+#   standalone/apps/web/.next/     (build output)
 COPY --from=web-build /app/apps/web/.next/standalone ./
 COPY --from=web-build /app/apps/web/.next/static ./apps/web/.next/static
-COPY --from=web-build /app/apps/web/public ./apps/web/public 2>/dev/null || true
+COPY --from=web-build /app/apps/web/public ./apps/web/public
+
 USER nextjs
 EXPOSE 3000
 ENV PORT=3000
