@@ -122,16 +122,27 @@ with sentro.trace("order-processor", goal="Process refund #456") as run:
 
 ## The Dashboard
 
+![Issues page](docs/screenshots/02-issues.png)
+
 ### Issues — Sentry-style error tracking
 Errors grouped by fingerprint, with event counts, recency, and a badge showing how many **agent runs** were affected.
 
 ### Agent Runs — the flagship view
+
+![Agent Runs](docs/screenshots/03-runs.png)
+
 Every agent execution with: status, step count, duration, cost, and token usage. Stats bar shows success rate, total cost, and aggregate metrics.
 
 ### Step Replay — the killer feature
+
+![Step Replay](docs/screenshots/04-run-detail.png)
+
 A vertical timeline of every step the agent took. Expand each step to see tool call inputs/outputs and LLM call details. See exactly **where and why** the agent failed.
 
 ### Performance
+
+![Performance](docs/screenshots/05-performance.png)
+
 Slowest tool calls, LLM latency by model, cost breakdown. Find the bottlenecks in your agent's workflow.
 
 ### Alerts
