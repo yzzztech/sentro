@@ -83,6 +83,35 @@ const result = await sentro.trace('order-processor', {
 // Automatically captures: duration, tokens, cost, success/failure
 ```
 
+### Python SDK
+
+```bash
+pip install sentro-sdk
+```
+
+Zero dependencies. Pythonic context managers. Async support.
+
+```python
+from sentro import Sentro
+
+sentro = Sentro(dsn="http://token@localhost:3000/api/ingest/proj_1")
+
+# Error tracking
+sentro.capture_exception(error)
+
+# Agent observability with context managers
+with sentro.trace("order-processor", goal="Process refund #456") as run:
+    with run.trace("Looking up order") as step:
+        with step.trace_tool_call("db.query", input={"sql": "SELECT 1"}) as tool:
+            result = db.query("SELECT 1")
+            tool.set_result(result)
+        
+        llm = step.llm_call(model="claude-sonnet-4-6")
+        response = call_llm("Approve refund?")
+        llm.end(prompt_tokens=150, completion_tokens=20, cost=0.001)
+# Auto-ends on exit, auto-errors on exception
+```
+
 ---
 
 ## The Dashboard
@@ -206,7 +235,7 @@ Sentro → error.new webhook → your agent → gh issue create
 ## Roadmap
 
 - [x] **Event webhooks** — real-time webhooks with HMAC signing and filters
-- [ ] **Python SDK** — for the AI/ML ecosystem
+- [x] **Python SDK** — zero dependencies, context managers, async support, 23 tests
 - [ ] **Framework integrations** — auto-instrumentation for LangChain, CrewAI, Vercel AI SDK
 - [ ] **Drift / guardrail alerts** — detect looping agents, token burn, repeated tool calls
 - [ ] **Session replay UI** — animated step-by-step replay with timeline scrubbing
