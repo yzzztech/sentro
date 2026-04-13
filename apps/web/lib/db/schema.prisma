@@ -46,6 +46,7 @@ model Project {
   llmCalls           LlmCall[]
   alertRules         AlertRule[]
   alertHistory       AlertHistory[]
+  webhooks           Webhook[]
 
   @@map("projects")
 }
@@ -241,6 +242,31 @@ model AlertRule {
 
   @@index([projectId, enabled])
   @@map("alert_rules")
+}
+
+enum WebhookEvent {
+  error_new
+  error_regression
+  run_failed
+  run_completed
+  cost_spike
+}
+
+model Webhook {
+  id          String         @id @default(uuid())
+  projectId   String         @map("project_id")
+  name        String
+  url         String
+  events      WebhookEvent[]
+  secret      String?
+  filters     Json           @default("{}")
+  enabled     Boolean        @default(true)
+  createdAt   DateTime       @default(now()) @map("created_at")
+  updatedAt   DateTime       @updatedAt @map("updated_at")
+  project     Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId, enabled])
+  @@map("webhooks")
 }
 
 model AlertHistory {
