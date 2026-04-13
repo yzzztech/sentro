@@ -4,5 +4,18 @@ export default defineConfig({
   test: {
     globals: true,
     environment: "node",
+    coverage: {
+      provider: "v8",
+      include: ["src/**/*.ts"],
+      exclude: ["src/types.ts"],
+      reporter: ["text", "lcov", "json-summary"],
+      reportsDirectory: "./coverage",
+      thresholds: {
+        statements: 80,
+        branches: 70,
+        functions: 80,
+        lines: 80,
+      },
+    },
   },
 });

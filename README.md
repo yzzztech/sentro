@@ -2,6 +2,8 @@
 
 [![npm](https://img.shields.io/npm/v/@sentro/sdk?label=npm)](https://www.npmjs.com/package/@sentro/sdk)
 [![PyPI](https://img.shields.io/pypi/v/sentro-sdk?label=pypi)](https://pypi.org/project/sentro-sdk/)
+[![TS Coverage](https://img.shields.io/badge/coverage--TS-96%25-brightgreen)](packages/sdk)
+[![Python Coverage](https://img.shields.io/badge/coverage--Python-94%25-brightgreen)](packages/sdk-python)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
 ### Sentry was built for humans. Sentro was built for agents.

@@ -5,3 +5,8 @@ dist/
 .env.local
 *.tsbuildinfo
 .superpowers/
+coverage/
+*.lcov
+coverage.json
+.coverage
+htmlcov/

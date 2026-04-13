@@ -35,10 +35,23 @@ Documentation = "https://github.com/yzzztech/sentro#python-sdk"
 Issues = "https://github.com/yzzztech/sentro/issues"
 
 [project.optional-dependencies]
-dev = ["pytest>=8.0"]
+dev = ["pytest>=8.0", "pytest-cov>=6.0"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["sentro"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+addopts = "--cov=sentro --cov-report=term-missing --cov-report=lcov --cov-report=json"
+
+[tool.coverage.run]
+source = ["sentro"]
+
+[tool.coverage.report]
+fail_under = 80
+show_missing = true
+exclude_lines = [
+  "pragma: no cover",
+  "if TYPE_CHECKING:",
+  "if __name__ == .__main__.",
+]
