@@ -21,6 +21,7 @@ Framework integrations for automatic agent observability with Sentro.
 
 | Platform | Integration | Status |
 |----------|------------|--------|
+| **Claude Code** | Shell hook (SessionStart, PreToolUse, PostToolUse, Stop) | Available |
 | **OpenClaw** | SKILL.md skill | Available |
 
 ## Quick Start
@@ -44,6 +45,18 @@ from sentro.integrations.crewai import SentroCrewListener
 sentro = Sentro(dsn="http://token@localhost:3000/api/ingest/proj_1")
 listener = SentroCrewListener(sentro)
 # Auto-registers — just kick off your crew
+```
+
+### Claude Code
+```bash
+# 1. Set your DSN
+export SENTRO_DSN="http://token@localhost:3000/api/ingest/proj_1"
+
+# 2. Copy the hook
+cp packages/integrations/claude-code/sentro-hook.sh ~/.claude/hooks/sentro-hook.sh
+chmod +x ~/.claude/hooks/sentro-hook.sh
+
+# 3. Add hooks to ~/.claude/settings.json (see packages/integrations/claude-code/README.md)
 ```
 
 ### OpenClaw
