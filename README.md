@@ -25,6 +25,7 @@ Sentry shows you **what broke**. Sentro shows you the full story:
 | **LLM call tracking** | No | **Yes** |
 | **Token & cost tracking** | No | **Yes** |
 | **Agent failure analysis** | No | **Yes** |
+| **Event webhooks** | Limited | **Yes — 5 event types, HMAC signing, filters** |
 
 ---
 
@@ -177,8 +178,34 @@ Per-project settings (configurable via API/dashboard):
 
 ---
 
+## Event Webhooks — Agents Monitoring Agents
+
+Sentro fires real-time webhooks when things happen, so other agents can react automatically.
+
+| Event | Fires when |
+|-------|-----------|
+| `error.new` | First occurrence of a new error |
+| `error.regression` | A resolved error comes back |
+| `run.failed` | An agent run fails or times out |
+| `run.completed` | Any agent run finishes |
+| `cost.spike` | A run exceeds your cost threshold |
+
+**Rich payloads** — every webhook includes full context (error details, run steps, token counts, cost) so the receiving agent can act without calling back.
+
+**HMAC signing** — optional `X-Sentro-Signature` header for payload verification.
+
+**Filters** — scope webhooks by agent name, error level, or cost threshold.
+
+**Example: auto-create GitHub issues on new errors**
+```
+Sentro → error.new webhook → your agent → gh issue create
+```
+
+---
+
 ## Roadmap
 
+- [x] **Event webhooks** — real-time webhooks with HMAC signing and filters
 - [ ] **Python SDK** — for the AI/ML ecosystem
 - [ ] **Framework integrations** — auto-instrumentation for LangChain, CrewAI, Vercel AI SDK
 - [ ] **Drift / guardrail alerts** — detect looping agents, token burn, repeated tool calls
