@@ -4,6 +4,11 @@ All notable changes to Sentro are documented here.
 
 ## [0.1.1] - 2026-04-14
 
+### Infrastructure
+- **GitHub Actions CI** — runs TypeScript SDK tests, Python SDK tests, Next.js build with Postgres, and `npm audit` on every push and PR
+- **CORS middleware** — `/api/ingest` now accepts cross-origin requests from any origin, enabling browser-based SDKs
+- **CONTRIBUTING.md** — development setup guide, project structure, testing instructions, and contribution workflow
+
 ### Security
 - **SSRF protection** — webhook and alert URLs are now validated against private/reserved IP ranges (127.0.0.0/8, 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 169.254.0.0/16), localhost, and non-HTTP protocols
 - **Login rate limiting** — 5 attempts per IP per 15-minute window with 429 responses and Retry-After headers

@@ -1,0 +1,72 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test-ts:
+    name: TypeScript SDK Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: cd packages/sdk && npm run build && npm test
+
+  test-python:
+    name: Python SDK Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: cd packages/sdk-python && pip install pytest pytest-cov && pytest
+
+  build:
+    name: Build Next.js App
+    runs-on: ubuntu-latest
+    needs: [test-ts]
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: sentro
+          POSTGRES_PASSWORD: sentro
+          POSTGRES_DB: sentro
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U sentro"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://sentro:sentro@localhost:5432/sentro?schema=public
+      SESSION_SECRET: ci-test-secret
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: cd apps/web && npx prisma generate && npx prisma db push
+      - run: cd apps/web && npm run build
+
+  audit:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm audit --audit-level=high || true

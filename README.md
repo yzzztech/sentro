@@ -244,6 +244,8 @@ Sentro → error.new webhook → your agent → gh issue create
 - [x] **Python SDK** — published on [PyPI](https://pypi.org/project/sentro-sdk/), zero dependencies, context managers, async support, 23 tests
 - [x] **Event webhooks** — real-time webhooks with HMAC signing and filters
 - [x] **Security hardening** — SSRF protection, login rate limiting, setup race fix, ingest validation, session cleanup
+- [x] **CI/CD pipeline** — GitHub Actions with tests, build, and security audit on every PR
+- [x] **CORS middleware** — cross-origin support for browser-based SDKs
 - [ ] **Framework integrations** — auto-instrumentation for LangChain, CrewAI, Vercel AI SDK
 - [ ] **Drift / guardrail alerts** — detect looping agents, token burn, repeated tool calls
 - [ ] **Session replay UI** — animated step-by-step replay with timeline scrubbing
