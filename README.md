@@ -47,6 +47,37 @@ Open **http://localhost:3000**, create your admin account, and you're live.
 
 ---
 
+## One-Line Integrations — Plug and Play
+
+Already using Claude Code, OpenClaw, LangChain, CrewAI, or Vercel AI SDK? One command and you're tracing.
+
+### Claude Code
+```bash
+curl -fsSL https://raw.githubusercontent.com/yzzztech/sentro/main/packages/integrations/claude-code/install.sh | bash -s -- "YOUR_DSN"
+```
+
+### OpenClaw
+```bash
+curl -fsSL https://raw.githubusercontent.com/yzzztech/sentro/main/packages/integrations/openclaw/install.sh | bash -s -- "YOUR_DSN"
+```
+
+### LangChain, CrewAI
+```bash
+pip install sentro-sdk
+# then: from sentro.integrations.langchain import SentroMiddleware
+# or:   from sentro.integrations.crewai import SentroCrewListener
+```
+
+### Vercel AI SDK
+```bash
+npm install @sentro/sdk
+# then: import { sentroMiddleware } from '@sentro/vercel-ai';
+```
+
+See [full integration docs](packages/integrations/) for details.
+
+---
+
 ## SDK — 5 Lines to Full Agent Observability
 
 ```bash

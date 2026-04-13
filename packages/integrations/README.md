@@ -1,78 +1,72 @@
-# Sentro Integrations
+# Sentro Integrations — Plug and Play
 
-Framework integrations for automatic agent observability with Sentro.
+One-line install for every supported platform. Set your `SENTRO_DSN` and you're live.
 
-## Available Integrations
+## Get Your DSN
 
-### Python
+Open your Sentro dashboard → Projects → create a new project → copy the DSN.
 
-| Framework | Package | Status |
-|-----------|---------|--------|
-| **LangChain** | `from sentro.integrations.langchain import SentroMiddleware` | Built-in |
-| **CrewAI** | `from sentro.integrations.crewai import SentroCrewListener` | Built-in |
+Format: `http://TOKEN@HOST:PORT/api/ingest/PROJECT_ID`
 
-### TypeScript
+---
 
-| Framework | Package | Status |
-|-----------|---------|--------|
-| **Vercel AI SDK** | `@sentro/vercel-ai` | Experimental |
+## One-Line Installs
 
-### Agent Platforms
+### Claude Code
 
-| Platform | Integration | Status |
-|----------|------------|--------|
-| **Claude Code** | Shell hook (SessionStart, PreToolUse, PostToolUse, Stop) | Available |
-| **OpenClaw** | SKILL.md skill | Available |
+```bash
+curl -fsSL https://raw.githubusercontent.com/yzzztech/sentro/main/packages/integrations/claude-code/install.sh | bash -s -- "YOUR_DSN"
+```
 
-## Quick Start
+Automatically captures every Claude Code session: tool calls, session start/stop, failures.
 
-### LangChain
+### OpenClaw
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/yzzztech/sentro/main/packages/integrations/openclaw/install.sh | bash -s -- "YOUR_DSN"
+```
+
+Installs the Sentro observability skill and the `sentro-sdk` Python package.
+
+### LangChain (Python)
+
+```bash
+pip install sentro-sdk
+```
+
 ```python
 from sentro import Sentro
 from sentro.integrations.langchain import SentroMiddleware
 
-sentro = Sentro(dsn="http://token@localhost:3000/api/ingest/proj_1")
-middleware = SentroMiddleware(sentro)
-
-agent = create_agent(model="gpt-4o", tools=[...], middleware=[middleware])
+sentro = Sentro(dsn="YOUR_DSN")
+agent = create_agent(model="gpt-4o", tools=[...], middleware=[SentroMiddleware(sentro)])
 ```
 
 ### CrewAI
+
+```bash
+pip install sentro-sdk
+```
+
 ```python
 from sentro import Sentro
 from sentro.integrations.crewai import SentroCrewListener
 
-sentro = Sentro(dsn="http://token@localhost:3000/api/ingest/proj_1")
-listener = SentroCrewListener(sentro)
-# Auto-registers — just kick off your crew
+sentro = Sentro(dsn="YOUR_DSN")
+SentroCrewListener(sentro)  # Auto-registers — just kick off your crew
 ```
-
-### Claude Code
-```bash
-# 1. Set your DSN
-export SENTRO_DSN="http://token@localhost:3000/api/ingest/proj_1"
-
-# 2. Copy the hook
-cp packages/integrations/claude-code/sentro-hook.sh ~/.claude/hooks/sentro-hook.sh
-chmod +x ~/.claude/hooks/sentro-hook.sh
-
-# 3. Add hooks to ~/.claude/settings.json (see packages/integrations/claude-code/README.md)
-```
-
-### OpenClaw
-Install the Sentro skill:
-```bash
-pip install sentro-sdk
-export SENTRO_DSN="http://token@localhost:3000/api/ingest/proj_1"
-```
-Copy `packages/integrations/openclaw/SKILL.md` to your OpenClaw skills directory.
 
 ### Vercel AI SDK
+
+```bash
+npm install @sentro/sdk
+```
+
 ```typescript
 import { Sentro } from '@sentro/sdk';
 import { sentroMiddleware } from '@sentro/vercel-ai';
 
-const sentro = new Sentro({ dsn: '...' });
+const sentro = new Sentro({ dsn: 'YOUR_DSN' });
 
 const result = await generateText({
   model: openai('gpt-4o'),
@@ -81,5 +75,46 @@ const result = await generateText({
 });
 ```
 
-## GitHub
-https://github.com/yzzztech/sentro
+---
+
+## Full Matrix
+
+| Platform | Type | Install |
+|----------|------|---------|
+| **Claude Code** | Shell hook | One-line installer |
+| **OpenClaw** | SKILL.md + Python SDK | One-line installer |
+| **LangChain** | Python middleware | `pip install sentro-sdk` |
+| **CrewAI** | Python event listener | `pip install sentro-sdk` |
+| **Vercel AI SDK** | TypeScript middleware | `npm install @sentro/sdk` |
+
+## What Gets Captured (Every Integration)
+
+- Every agent run with goal, model, duration, and status
+- Each reasoning step in sequence
+- Tool calls with inputs, outputs, and latency
+- LLM calls with model, tokens, cost, and latency
+- Errors with full stack traces
+
+## Uninstall
+
+### Claude Code
+```bash
+rm ~/.claude/hooks/sentro-hook.sh
+# Then edit ~/.claude/settings.json to remove Sentro hook entries
+```
+
+### OpenClaw
+```bash
+rm -rf ~/.openclaw/skills/sentro-observability
+```
+
+### Python / TypeScript
+```bash
+pip uninstall sentro-sdk
+# or
+npm uninstall @sentro/sdk
+```
+
+---
+
+**GitHub:** https://github.com/yzzztech/sentro
