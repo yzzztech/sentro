@@ -1,8 +1,10 @@
 # Sentro Python SDK
 
-Python SDK for [Sentro](https://sentro.dev) -- error tracking and agent observability. Zero external dependencies.
+**Error tracking and agent observability for AI agents.** Zero dependencies.
 
-## Installation
+Sentro is an open-source Sentry alternative built specifically for AI agents. This SDK gives you full observability into your agent runs — every step, tool call, LLM call, token count, and cost.
+
+## Install
 
 ```bash
 pip install sentro-sdk
@@ -10,80 +12,74 @@ pip install sentro-sdk
 
 ## Quick Start
 
+### Error tracking
+
 ```python
 from sentro import Sentro
 
 sentro = Sentro(dsn="http://token@localhost:3000/api/ingest/proj_1")
-```
 
-## Error Tracking
-
-```python
 try:
     do_something()
 except Exception as e:
     sentro.capture_exception(e)
-
-sentro.capture_message("Deployment started", level="info")
-sentro.set_tags({"service": "api", "env": "production"})
-sentro.set_context({"user_id": "123"})
 ```
 
-## Agent Observability
-
-### Context Manager API (recommended)
+### Agent observability
 
 ```python
-with sentro.trace("order-processor", goal="Process refund #456", model="claude-sonnet-4-6") as run:
+from sentro import Sentro
+
+sentro = Sentro(dsn="http://token@localhost:3000/api/ingest/proj_1")
+
+with sentro.trace("order-processor", goal="Process refund #456") as run:
     with run.trace("Looking up order") as step:
+        # Track tool calls
         with step.trace_tool_call("db.query", input={"sql": "SELECT 1"}) as tool:
             result = db.query("SELECT 1")
             tool.set_result(result)
 
+        # Track LLM calls
         llm = step.llm_call(model="claude-sonnet-4-6")
-        response = call_llm("Approve?")
-        llm.end(prompt_tokens=150, completion_tokens=20)
+        response = call_llm("Approve refund?")
+        llm.end(prompt_tokens=150, completion_tokens=20, cost=0.001)
+# Auto-ends on exit, auto-errors on exception
 ```
 
-Context managers automatically end on exit and record errors on exception.
-
-### Explicit API
+### Async support
 
 ```python
-run = sentro.start_run(agent="order-processor", goal="Process refund")
-
-step = run.step("Looking up order details")
-tool = step.tool_call("database.query", input={"sql": "SELECT * FROM orders"})
-tool.end(result={"id": 456})
-
-llm = step.llm_call(model="claude-sonnet-4-6", messages=[{"role": "user", "content": "Approve?"}])
-llm.end(response="Yes", prompt_tokens=150, completion_tokens=20, cost=0.001)
-
-step.end()
-run.end(status="success")
+async with sentro.trace("async-agent", goal="Async task") as run:
+    async with run.trace("Step 1") as step:
+        result = await some_async_work()
 ```
+
+## Features
+
+- **Zero dependencies** — standard library only, works in any Python 3.10+ environment
+- **Context managers** — `with` blocks for automatic lifecycle management
+- **Async support** — `async with` for async frameworks
+- **Auto error capture** — exceptions automatically mark runs as failed
+- **Batched transport** — events are batched and sent efficiently
+- **Run tracing** — full agent execution timeline
+- **Step replay** — ordered reasoning chain with tool and LLM call details
+- **Cost tracking** — token counts and cost per LLM call
 
 ## Configuration
 
 ```python
 sentro = Sentro(
     dsn="http://token@localhost:3000/api/ingest/proj_1",
-    capture_prompts=False,     # Set True to include LLM messages/responses
-    flush_interval=1.0,        # Seconds between automatic flushes
-    max_batch_size=100,        # Max events per batch
-    default_tags={"service": "my-agent"},
+    default_tags={"env": "production", "version": "1.0.0"},
 )
 ```
 
-## Shutdown
+## Links
 
-```python
-sentro.flush()     # Flush remaining events
-sentro.shutdown()  # Stop timer + flush
-```
+- **GitHub:** [github.com/yzzztech/sentro](https://github.com/yzzztech/sentro)
+- **Docs:** Available at `/docs` when running Sentro
+- **TypeScript SDK:** `npm install @sentro/sdk`
 
-An `atexit` handler automatically flushes on interpreter exit.
+## License
 
-## Full Documentation
-
-See [sentro.dev/docs](https://sentro.dev/docs) for the complete documentation.
+MIT

@@ -5,14 +5,40 @@ build-backend = "hatchling.build"
 [project]
 name = "sentro-sdk"
 version = "0.1.0"
-description = "Python SDK for Sentro — error tracking and agent observability"
+description = "Python SDK for Sentro — error tracking and agent observability for AI agents"
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.10"
 dependencies = []
+authors = [
+  { name = "Yaz", email = "yaz@yzzztech.com" },
+]
+keywords = ["sentro", "observability", "error-tracking", "ai-agents", "llm", "tracing", "sentry-alternative"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+  "Topic :: System :: Monitoring",
+  "Typing :: Typed",
+]
+
+[project.urls]
+Homepage = "https://github.com/yzzztech/sentro"
+Repository = "https://github.com/yzzztech/sentro"
+Documentation = "https://github.com/yzzztech/sentro#python-sdk"
+Issues = "https://github.com/yzzztech/sentro/issues"
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["sentro"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -600,9 +600,11 @@
     <a href="#install">Installation &amp; Setup</a>
     <a href="#errors">Error Tracking</a>
     <a href="#agents">Agent Observability <span class="badge badge-purple">AI</span></a>
+    <a href="#python-sdk">Python SDK <span class="badge badge-green">New</span></a>
 
     <div class="nav-section">Dashboard</div>
     <a href="#dashboard">Dashboard Guide</a>
+    <a href="#webhooks">Event Webhooks <span class="badge badge-green">New</span></a>
 
     <div class="nav-section">Reference</div>
     <a href="#api">API Reference</a>
@@ -625,13 +627,20 @@
     <section class="hero" id="intro">
       <div class="hero-eyebrow">
         <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="4" fill="#22c55e"/></svg>
-        Open Source · Self-Hostable · v0.1.0
+        Open Source · Self-Hostable · v1.0.0
       </div>
       <h1><span>Sentro</span> — Error Tracking &amp;<br>Agent Observability</h1>
       <p class="hero-lead">
         Error tracking and observability built for AI agents. Sentro gives you
         deep visibility into every run, step, tool call, and LLM call your agents
         make — plus traditional error tracking for the rest of your stack.
+      </p>
+
+      <p style="margin-top:16px">
+        <a href="https://github.com/yzzztech/sentro" target="_blank" style="display:inline-flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px 16px;color:var(--text);text-decoration:none;font-size:.88rem;font-weight:500;transition:border-color .15s">
+          <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+          yzzztech/sentro — Star on GitHub
+        </a>
       </p>
 
       <div class="callout callout-tip">
@@ -1090,11 +1099,90 @@
     </section>
 
     <!-- ══════════════════════════════════════════════════════ -->
+    <!-- PYTHON SDK                                              -->
+    <!-- ══════════════════════════════════════════════════════ -->
+    <section class="section" id="python-sdk">
+      <div class="section-header">
+        <div class="section-num">5</div>
+        <h2>Python SDK <span class="badge badge-green">New</span></h2>
+      </div>
+
+      <p>Zero dependencies. Pythonic context managers. Full async support. 23 tests.</p>
+
+      <h3>Install</h3>
+      <div class="code-block">
+        <div class="lang-label">bash</div>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        <pre><span class="fn">pip</span> install sentro-sdk</pre>
+      </div>
+
+      <h3>Error tracking</h3>
+      <div class="code-block">
+        <div class="lang-label">python</div>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        <pre><span class="kw">from</span> <span class="cls">sentro</span> <span class="kw">import</span> <span class="cls">Sentro</span>
+
+<span class="prop">sentro</span> <span class="punc">=</span> <span class="cls">Sentro</span><span class="punc">(</span><span class="prop">dsn</span><span class="punc">=</span><span class="str">"http://token@localhost:3000/api/ingest/proj_1"</span><span class="punc">)</span>
+
+<span class="cmt"># Capture an exception</span>
+<span class="kw">try</span><span class="punc">:</span>
+    <span class="fn">do_something</span><span class="punc">()</span>
+<span class="kw">except</span> <span class="cls">Exception</span> <span class="kw">as</span> <span class="prop">e</span><span class="punc">:</span>
+    <span class="prop">sentro</span><span class="punc">.</span><span class="fn">capture_exception</span><span class="punc">(</span><span class="prop">e</span><span class="punc">)</span></pre>
+      </div>
+
+      <h3>Agent observability with context managers</h3>
+      <p>The Python SDK uses <code>with</code> blocks for automatic lifecycle management. Runs and steps auto-end on exit, and auto-error on exceptions.</p>
+      <div class="code-block">
+        <div class="lang-label">python</div>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        <pre><span class="kw">from</span> <span class="cls">sentro</span> <span class="kw">import</span> <span class="cls">Sentro</span>
+
+<span class="prop">sentro</span> <span class="punc">=</span> <span class="cls">Sentro</span><span class="punc">(</span><span class="prop">dsn</span><span class="punc">=</span><span class="str">"http://token@localhost:3000/api/ingest/proj_1"</span><span class="punc">)</span>
+
+<span class="kw">with</span> <span class="prop">sentro</span><span class="punc">.</span><span class="fn">trace</span><span class="punc">(</span><span class="str">"order-processor"</span><span class="punc">,</span> <span class="prop">goal</span><span class="punc">=</span><span class="str">"Process refund #456"</span><span class="punc">)</span> <span class="kw">as</span> <span class="prop">run</span><span class="punc">:</span>
+    <span class="kw">with</span> <span class="prop">run</span><span class="punc">.</span><span class="fn">trace</span><span class="punc">(</span><span class="str">"Looking up order"</span><span class="punc">)</span> <span class="kw">as</span> <span class="prop">step</span><span class="punc">:</span>
+        <span class="cmt"># Track tool calls</span>
+        <span class="kw">with</span> <span class="prop">step</span><span class="punc">.</span><span class="fn">trace_tool_call</span><span class="punc">(</span><span class="str">"db.query"</span><span class="punc">,</span> <span class="prop">input</span><span class="punc">={</span><span class="str">"sql"</span><span class="punc">:</span> <span class="str">"SELECT 1"</span><span class="punc">})</span> <span class="kw">as</span> <span class="prop">tool</span><span class="punc">:</span>
+            <span class="prop">result</span> <span class="punc">=</span> <span class="fn">db</span><span class="punc">.</span><span class="fn">query</span><span class="punc">(</span><span class="str">"SELECT 1"</span><span class="punc">)</span>
+            <span class="prop">tool</span><span class="punc">.</span><span class="fn">set_result</span><span class="punc">(</span><span class="prop">result</span><span class="punc">)</span>
+
+        <span class="cmt"># Track LLM calls</span>
+        <span class="prop">llm</span> <span class="punc">=</span> <span class="prop">step</span><span class="punc">.</span><span class="fn">llm_call</span><span class="punc">(</span><span class="prop">model</span><span class="punc">=</span><span class="str">"claude-sonnet-4-6"</span><span class="punc">)</span>
+        <span class="prop">response</span> <span class="punc">=</span> <span class="fn">call_llm</span><span class="punc">(</span><span class="str">"Approve refund?"</span><span class="punc">)</span>
+        <span class="prop">llm</span><span class="punc">.</span><span class="fn">end</span><span class="punc">(</span><span class="prop">prompt_tokens</span><span class="punc">=</span><span class="num">150</span><span class="punc">,</span> <span class="prop">completion_tokens</span><span class="punc">=</span><span class="num">20</span><span class="punc">,</span> <span class="prop">cost</span><span class="punc">=</span><span class="num">0.001</span><span class="punc">)</span>
+<span class="cmt"># Auto-ends on exit, auto-errors on exception</span></pre>
+      </div>
+
+      <h3>Async support</h3>
+      <p>The Python SDK supports <code>async with</code> for use in async frameworks:</p>
+      <div class="code-block">
+        <div class="lang-label">python</div>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        <pre><span class="kw">import</span> <span class="cls">asyncio</span>
+<span class="kw">from</span> <span class="cls">sentro</span> <span class="kw">import</span> <span class="cls">Sentro</span>
+
+<span class="prop">sentro</span> <span class="punc">=</span> <span class="cls">Sentro</span><span class="punc">(</span><span class="prop">dsn</span><span class="punc">=</span><span class="str">"http://token@localhost:3000/api/ingest/proj_1"</span><span class="punc">)</span>
+
+<span class="kw">async def</span> <span class="fn">my_agent</span><span class="punc">():</span>
+    <span class="kw">async with</span> <span class="prop">sentro</span><span class="punc">.</span><span class="fn">trace</span><span class="punc">(</span><span class="str">"async-agent"</span><span class="punc">,</span> <span class="prop">goal</span><span class="punc">=</span><span class="str">"Async task"</span><span class="punc">)</span> <span class="kw">as</span> <span class="prop">run</span><span class="punc">:</span>
+        <span class="kw">async with</span> <span class="prop">run</span><span class="punc">.</span><span class="fn">trace</span><span class="punc">(</span><span class="str">"Step 1"</span><span class="punc">)</span> <span class="kw">as</span> <span class="prop">step</span><span class="punc">:</span>
+            <span class="prop">result</span> <span class="punc">=</span> <span class="kw">await</span> <span class="fn">some_async_work</span><span class="punc">()</span>
+            <span class="kw">return</span> <span class="prop">result</span></pre>
+      </div>
+
+      <div class="callout callout-info">
+        <strong>Zero dependencies</strong>
+        The Python SDK uses only the standard library — no <code>requests</code>, no <code>httpx</code>, no <code>aiohttp</code>. It works in any Python 3.8+ environment out of the box.
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════ -->
     <!-- DASHBOARD                                              -->
     <!-- ══════════════════════════════════════════════════════ -->
     <section class="section" id="dashboard">
       <div class="section-header">
-        <div class="section-num">5</div>
+        <div class="section-num">6</div>
         <h2>Dashboard Guide</h2>
       </div>
 
@@ -1145,11 +1233,61 @@
     </section>
 
     <!-- ══════════════════════════════════════════════════════ -->
+    <!-- EVENT WEBHOOKS                                         -->
+    <!-- ══════════════════════════════════════════════════════ -->
+    <section class="section" id="webhooks">
+      <div class="section-header">
+        <div class="section-num">7</div>
+        <h2>Event Webhooks <span class="badge badge-green">New</span></h2>
+      </div>
+
+      <p>Sentro fires real-time webhooks when things happen in your system, so other agents or services can react automatically. <strong>Agents monitoring agents.</strong></p>
+
+      <h3>Event types</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Event</th><th>Fires when</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>error.new</code></td><td>First occurrence of a new error (new fingerprint)</td></tr>
+            <tr><td><code>error.regression</code></td><td>A previously resolved error comes back</td></tr>
+            <tr><td><code>run.failed</code></td><td>An agent run fails or times out</td></tr>
+            <tr><td><code>run.completed</code></td><td>Any agent run finishes (success or failure)</td></tr>
+            <tr><td><code>cost.spike</code></td><td>A run exceeds your configured cost threshold</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Rich payloads</h3>
+      <p>Every webhook includes full context — error details, run steps, token counts, cost — so the receiving agent can act without calling back to the Sentro API.</p>
+
+      <h3>Security — HMAC signing</h3>
+      <p>Optionally configure a signing secret per webhook endpoint. Sentro sends an <code>X-Sentro-Signature</code> header containing an HMAC-SHA256 hash of the payload body, so you can verify authenticity on the receiving end.</p>
+
+      <h3>Filters</h3>
+      <p>Scope webhooks to only fire for specific conditions:</p>
+      <ul>
+        <li><strong>Agent name</strong> — only trigger for runs from a specific agent</li>
+        <li><strong>Error level</strong> — filter by severity (error, warning, info)</li>
+        <li><strong>Cost threshold</strong> — only fire <code>cost.spike</code> above a dollar amount</li>
+      </ul>
+
+      <h3>Management dashboard</h3>
+      <p>Configure webhooks directly from the Sentro dashboard — add endpoints, select event types, set filters, and view delivery history with HTTP status codes for debugging.</p>
+
+      <div class="callout callout-tip">
+        <strong>Example: auto-create GitHub issues on new errors</strong>
+        <br>Sentro fires <code>error.new</code> webhook &rarr; your agent receives it &rarr; runs <code>gh issue create</code> with the error details. Fully automated error triage.
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════ -->
     <!-- API REFERENCE                                          -->
     <!-- ══════════════════════════════════════════════════════ -->
     <section class="section" id="api">
       <div class="section-header">
-        <div class="section-num">6</div>
+        <div class="section-num">8</div>
         <h2>API Reference</h2>
       </div>
 
@@ -1315,7 +1453,7 @@
     <!-- ══════════════════════════════════════════════════════ -->
     <section class="section" id="config">
       <div class="section-header">
-        <div class="section-num">7</div>
+        <div class="section-num">9</div>
         <h2>Configuration</h2>
       </div>
 
@@ -1354,7 +1492,7 @@
     <!-- ══════════════════════════════════════════════════════ -->
     <section class="section" id="selfhost">
       <div class="section-header">
-        <div class="section-num">8</div>
+        <div class="section-num">10</div>
         <h2>Self-Hosting Guide</h2>
       </div>
 
@@ -1442,7 +1580,7 @@
     <!-- ══════════════════════════════════════════════════════ -->
     <section class="section" id="architecture">
       <div class="section-header">
-        <div class="section-num">9</div>
+        <div class="section-num">11</div>
         <h2>Architecture</h2>
       </div>
 
@@ -1509,23 +1647,37 @@
     <!-- ══════════════════════════════════════════════════════ -->
     <section class="section" id="roadmap">
       <div class="section-header">
-        <div class="section-num">10</div>
+        <div class="section-num">12</div>
         <h2>Roadmap</h2>
       </div>
 
-      <p>Sentro is open-source and actively developed. Here's what's planned:</p>
+      <p>Sentro is open-source and actively developed. Here's what's shipped and what's next:</p>
+
+      <div class="roadmap-item" style="border-left-color:var(--green)">
+        <div class="roadmap-version" style="background:rgba(34,197,94,.15);color:var(--green)">v1.0</div>
+        <div class="roadmap-content">
+          <h3>Shipped</h3>
+          <ul>
+            <li><s>Python SDK</s> — zero dependencies, context managers, async support, 23 tests <span class="badge badge-green">Done</span></li>
+            <li><s>Event webhooks</s> — 5 event types, HMAC signing, filters, management dashboard <span class="badge badge-green">Done</span></li>
+            <li><s>TypeScript SDK</s> — batched transport, trace wrapper API, 21 tests <span class="badge badge-green">Done</span></li>
+            <li><s>Full dashboard</s> — issues, agent runs, step replay, performance, alerts <span class="badge badge-green">Done</span></li>
+            <li><s>Docker deployment</s> — single <code>docker compose up</code> <span class="badge badge-green">Done</span></li>
+          </ul>
+        </div>
+      </div>
 
       <div class="roadmap-item">
         <div class="roadmap-version">v1.1</div>
         <div class="roadmap-content">
           <h3>Framework integrations &amp; guardrails</h3>
           <ul>
-            <li>Python SDK (<code>pip install sentro-sdk</code>)</li>
             <li>LangChain callback handler — automatic tracing with zero manual instrumentation</li>
             <li>CrewAI integration — trace crew tasks and agent interactions</li>
             <li>Vercel AI SDK middleware — wrap <code>generateText</code> / <code>streamText</code> calls automatically</li>
             <li>Drift &amp; guardrail alerts — fire when agent behaviour deviates from a baseline (token count, step count, tool call frequency)</li>
             <li>Session replay UI — visualise full run timelines as an interactive Gantt-style chart</li>
+            <li>Source maps — deobfuscate minified stack traces</li>
           </ul>
         </div>
       </div>
@@ -1572,7 +1724,7 @@
 
       <div class="callout callout-tip">
         <strong>Contributing</strong>
-        PRs and issues are welcome on GitHub. Check the <code>CONTRIBUTING.md</code> for local development setup and the <code>good first issue</code> label for beginner-friendly tasks.
+        PRs and issues are welcome on <a href="https://github.com/yzzztech/sentro" target="_blank" style="color:var(--green)">GitHub</a>. Check the <code>CONTRIBUTING.md</code> for local development setup and the <code>good first issue</code> label for beginner-friendly tasks.
       </div>
     </section>
 
