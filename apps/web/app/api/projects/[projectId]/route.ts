@@ -1,0 +1,68 @@
+import { NextRequest, NextResponse } from "next/server";
+import { requireAuth } from "@/lib/auth/middleware";
+import { prisma } from "@/lib/db/prisma";
+
+export async function GET(
+  _request: NextRequest,
+  { params }: { params: Promise<{ projectId: string }> }
+) {
+  const auth = await requireAuth();
+  if (auth instanceof NextResponse) return auth;
+
+  const { projectId } = await params;
+
+  const project = await prisma.project.findUnique({
+    where: { id: projectId },
+  });
+
+  if (!project) {
+    return NextResponse.json({ error: "Project not found" }, { status: 404 });
+  }
+
+  return NextResponse.json({ project });
+}
+
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ projectId: string }> }
+) {
+  const auth = await requireAuth();
+  if (auth instanceof NextResponse) return auth;
+
+  const { projectId } = await params;
+  const body = await request.json();
+
+  const data: {
+    name?: string;
+    retentionDays?: number;
+    rateLimitPerMinute?: number;
+  } = {};
+
+  if (body.name !== undefined) data.name = body.name;
+  if (body.retentionDays !== undefined) data.retentionDays = body.retentionDays;
+  if (body.rateLimitPerMinute !== undefined)
+    data.rateLimitPerMinute = body.rateLimitPerMinute;
+
+  const project = await prisma.project.update({
+    where: { id: projectId },
+    data,
+  });
+
+  return NextResponse.json({ project });
+}
+
+export async function DELETE(
+  _request: NextRequest,
+  { params }: { params: Promise<{ projectId: string }> }
+) {
+  const auth = await requireAuth();
+  if (auth instanceof NextResponse) return auth;
+
+  const { projectId } = await params;
+
+  await prisma.project.delete({
+    where: { id: projectId },
+  });
+
+  return NextResponse.json({ ok: true });
+}
