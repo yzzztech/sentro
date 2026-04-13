@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth/middleware";
 import { prisma } from "@/lib/db/prisma";
@@ -66,7 +67,7 @@ export async function POST(
       name,
       url,
       events: events as WebhookEvent[],
-      secret: secret ?? null,
+      secret: secret ?? crypto.randomBytes(32).toString("hex"),
       filters: filters ?? {},
       enabled: enabled !== undefined ? Boolean(enabled) : true,
     },

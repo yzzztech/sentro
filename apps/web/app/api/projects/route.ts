@@ -8,6 +8,7 @@ export async function GET() {
   if (auth instanceof NextResponse) return auth;
 
   const projects = await prisma.project.findMany({
+    where: { userId: auth.userId },
     select: {
       id: true,
       name: true,
@@ -39,6 +40,7 @@ export async function POST(request: NextRequest) {
     data: {
       name,
       dsnToken,
+      userId: auth.userId,
     },
   });
 

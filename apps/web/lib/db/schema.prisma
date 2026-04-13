@@ -14,6 +14,7 @@ model User {
   createdAt    DateTime  @default(now()) @map("created_at")
   updatedAt    DateTime  @updatedAt @map("updated_at")
   sessions     Session[]
+  projects     Project[]
 
   @@map("users")
 }
@@ -33,6 +34,8 @@ model Session {
 model Project {
   id                 String       @id @default(uuid())
   name               String
+  userId             String       @map("user_id")
+  user               User         @relation(fields: [userId], references: [id])
   dsnToken           String       @unique @map("dsn_token")
   retentionDays      Int          @default(30) @map("retention_days")
   rateLimitPerMinute Int          @default(1000) @map("rate_limit_per_minute")

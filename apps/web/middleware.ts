@@ -24,6 +24,21 @@ export function middleware(request: NextRequest) {
     return response;
   }
 
+  // CSRF protection for state-mutating dashboard API requests
+  if (
+    pathname.startsWith("/api/") &&
+    !pathname.startsWith("/api/ingest") &&
+    request.method !== "GET" &&
+    request.method !== "HEAD" &&
+    request.method !== "OPTIONS"
+  ) {
+    const contentType = request.headers.get("content-type") ?? "";
+    const isJsonRequest = contentType.includes("application/json");
+    if (!isJsonRequest) {
+      return NextResponse.json({ error: "Content-Type must be application/json" }, { status: 415 });
+    }
+  }
+
   return NextResponse.next();
 }
 

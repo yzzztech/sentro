@@ -11,8 +11,8 @@ export async function GET(
 
   const { projectId } = await params;
 
-  const project = await prisma.project.findUnique({
-    where: { id: projectId },
+  const project = await prisma.project.findFirst({
+    where: { id: projectId, userId: auth.userId },
   });
 
   if (!project) {
@@ -43,6 +43,13 @@ export async function PATCH(
   if (body.rateLimitPerMinute !== undefined)
     data.rateLimitPerMinute = body.rateLimitPerMinute;
 
+  const existing = await prisma.project.findFirst({
+    where: { id: projectId, userId: auth.userId },
+  });
+  if (!existing) {
+    return NextResponse.json({ error: "Project not found" }, { status: 404 });
+  }
+
   const project = await prisma.project.update({
     where: { id: projectId },
     data,
@@ -59,6 +66,13 @@ export async function DELETE(
   if (auth instanceof NextResponse) return auth;
 
   const { projectId } = await params;
+
+  const existing = await prisma.project.findFirst({
+    where: { id: projectId, userId: auth.userId },
+  });
+  if (!existing) {
+    return NextResponse.json({ error: "Project not found" }, { status: 404 });
+  }
 
   await prisma.project.delete({
     where: { id: projectId },

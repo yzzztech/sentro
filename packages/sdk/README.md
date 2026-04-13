@@ -99,6 +99,12 @@ const sentro = new Sentro({
 | `maxBatchSize` | number | `100` | Max events per batch before immediate flush |
 | `defaultTags` | Record\<string, string\> | — | Tags merged into every event |
 
+## Security Considerations
+
+- Set `capturePrompts: false` (the default) to avoid storing LLM prompt/response bodies that may contain PII
+- DSN tokens are API keys — treat them like passwords, don't commit them to source control
+- Tool call inputs/outputs are stored as-is — avoid passing sensitive data (API keys, passwords) through traced tool calls
+
 ## Graceful Shutdown
 
 ```typescript

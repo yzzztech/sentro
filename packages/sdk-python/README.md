@@ -74,6 +74,12 @@ sentro = Sentro(
 )
 ```
 
+## Security Considerations
+
+- The `capture_prompts` option is disabled by default to avoid storing LLM prompt/response bodies that may contain PII
+- DSN tokens are API keys — treat them like passwords, don't commit them to source control  
+- Tool call inputs/outputs are stored as-is — avoid passing sensitive data (API keys, passwords) through traced tool calls
+
 ## Links
 
 - **GitHub:** [github.com/yzzztech/sentro](https://github.com/yzzztech/sentro)

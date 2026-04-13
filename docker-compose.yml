@@ -6,7 +6,6 @@ services:
       - "3456:3000"
     environment:
       DATABASE_URL: "postgresql://${POSTGRES_USER:-sentro}:${POSTGRES_PASSWORD:-sentro}@db:5432/${POSTGRES_DB:-sentro}?schema=public"
-      SESSION_SECRET: "${SESSION_SECRET:-change-me-in-production}"
       NEXT_PUBLIC_APP_URL: "http://localhost:3000"
     depends_on:
       db:
