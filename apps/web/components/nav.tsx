@@ -13,6 +13,7 @@ const PROJECT_TABS = [
   { label: "Agent Runs", slug: "runs" },
   { label: "Performance", slug: "performance" },
   { label: "Alerts", slug: "alerts" },
+  { label: "Webhooks", slug: "webhooks" },
 ] as const;
 
 export default function Nav({ projectId, projectName }: NavProps) {
