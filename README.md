@@ -1,5 +1,9 @@
 # Sentro
 
+[![npm](https://img.shields.io/npm/v/@sentro/sdk?label=npm)](https://www.npmjs.com/package/@sentro/sdk)
+[![PyPI](https://img.shields.io/pypi/v/sentro-sdk?label=pypi)](https://pypi.org/project/sentro-sdk/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+
 ### Sentry was built for humans. Sentro was built for agents.
 
 **Sentro** is an open-source error tracking and observability platform designed from the ground up for AI agents. It does everything Sentry does — error tracking, performance monitoring, alerting — plus first-class agent observability: run tracing, step-by-step replay, tool call monitoring, LLM call tracking, and cost analysis.
@@ -234,8 +238,9 @@ Sentro → error.new webhook → your agent → gh issue create
 
 ## Roadmap
 
+- [x] **TypeScript SDK** — published on [npm](https://www.npmjs.com/package/@sentro/sdk), batched transport, trace wrapper API, 21 tests
+- [x] **Python SDK** — published on [PyPI](https://pypi.org/project/sentro-sdk/), zero dependencies, context managers, async support, 23 tests
 - [x] **Event webhooks** — real-time webhooks with HMAC signing and filters
-- [x] **Python SDK** — zero dependencies, context managers, async support, 23 tests
 - [ ] **Framework integrations** — auto-instrumentation for LangChain, CrewAI, Vercel AI SDK
 - [ ] **Drift / guardrail alerts** — detect looping agents, token burn, repeated tool calls
 - [ ] **Session replay UI** — animated step-by-step replay with timeline scrubbing
