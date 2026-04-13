@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db/prisma";
+import { Prisma } from "@prisma/client";
 import { generateFingerprint } from "./fingerprint";
 import { EventLevel, RunStatus, StepType, CallStatus } from "@prisma/client";
 import { Decimal } from "@prisma/client/runtime/library";
@@ -49,9 +50,14 @@ function toInt(val: unknown, fallback = 0): number {
   return isNaN(n) ? fallback : Math.round(n);
 }
 
-function toJson(val: unknown): object {
-  if (val && typeof val === "object") return val as object;
+function toJson(val: unknown): Prisma.InputJsonValue {
+  if (val && typeof val === "object") return val as Prisma.InputJsonValue;
   return {};
+}
+
+function toJsonOrNull(val: unknown): Prisma.NullableJsonNullValueInput | Prisma.InputJsonValue {
+  if (val && typeof val === "object") return val as Prisma.InputJsonValue;
+  return Prisma.JsonNull;
 }
 
 export async function processFlush(projectDsnToken: string, events: IngestEvent[]): Promise<void> {
@@ -239,7 +245,7 @@ export async function processFlush(projectDsnToken: string, events: IngestEvent[
               cost: new Decimal(0),
               latencyMs: 0,
               temperature: typeof event.temperature === "number" ? event.temperature : null,
-              messages: event.messages ? toJson(event.messages) : null,
+              messages: toJsonOrNull(event.messages),
               startedAt: toDate(event.timestamp),
             },
           });
@@ -265,7 +271,7 @@ export async function processFlush(projectDsnToken: string, events: IngestEvent[
               totalTokens: toInt(event.total_tokens),
               cost: new Decimal(String(event.cost ?? 0)),
               latencyMs,
-              response: event.response ? toJson(event.response) : null,
+              response: toJsonOrNull(event.response),
             },
           });
           break;

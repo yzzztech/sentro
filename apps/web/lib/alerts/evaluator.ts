@@ -14,7 +14,7 @@ export async function evaluateAlertRules(): Promise<void> {
 
   for (const rule of rules) {
     try {
-      const config = rule.config as AlertConfig;
+      const config = rule.config as unknown as AlertConfig;
       const { threshold, windowMinutes } = config;
       const windowStart = new Date(Date.now() - windowMinutes * 60 * 1000);
 
@@ -97,7 +97,7 @@ export async function evaluateAlertRules(): Promise<void> {
               ruleId: rule.id,
               projectId: rule.projectId,
               triggeredAt: new Date(),
-              payload,
+              payload: payload as unknown as Record<string, never>,
               webhookStatus,
             },
           }),
