@@ -5,7 +5,7 @@ services:
     ports:
       - "3456:3000"
     environment:
-      DATABASE_URL: "postgresql://sentro:sentro@db:5432/sentro?schema=public"
+      DATABASE_URL: "postgresql://${POSTGRES_USER:-sentro}:${POSTGRES_PASSWORD:-sentro}@db:5432/${POSTGRES_DB:-sentro}?schema=public"
       SESSION_SECRET: "${SESSION_SECRET:-change-me-in-production}"
       NEXT_PUBLIC_APP_URL: "http://localhost:3000"
     depends_on:
@@ -15,9 +15,9 @@ services:
   db:
     image: postgres:16-alpine
     environment:
-      POSTGRES_USER: sentro
-      POSTGRES_PASSWORD: sentro
-      POSTGRES_DB: sentro
+      POSTGRES_USER: ${POSTGRES_USER:-sentro}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-sentro}
+      POSTGRES_DB: ${POSTGRES_DB:-sentro}
     volumes:
       - sentro-data:/var/lib/postgresql/data
     healthcheck:

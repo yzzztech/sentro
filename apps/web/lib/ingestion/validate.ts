@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+const MAX_EVENT_KEYS = 50;
+
 const ingestEventSchema = z
   .object({
     type: z.enum([
@@ -15,7 +17,10 @@ const ingestEventSchema = z
     ]),
     timestamp: z.string().datetime(),
   })
-  .passthrough();
+  .passthrough()
+  .refine((obj) => Object.keys(obj).length <= MAX_EVENT_KEYS, {
+    message: `Event objects may have at most ${MAX_EVENT_KEYS} fields`,
+  });
 
 const ingestPayloadSchema = z.object({
   dsn: z.string().min(1),

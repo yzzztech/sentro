@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth/middleware";
 import { prisma } from "@/lib/db/prisma";
+import { validateWebhookUrl } from "@/lib/webhooks/validate-url";
 
 export async function GET(
   _request: NextRequest,
@@ -35,6 +36,16 @@ export async function POST(
   const body = await request.json();
 
   const { name, type, config, webhookUrl } = body;
+
+  if (webhookUrl) {
+    const urlValidation = await validateWebhookUrl(webhookUrl);
+    if (!urlValidation.valid) {
+      return NextResponse.json(
+        { error: `Invalid webhook URL: ${urlValidation.error}` },
+        { status: 400 }
+      );
+    }
+  }
 
   if (!name || !type || !config || !webhookUrl) {
     return NextResponse.json(

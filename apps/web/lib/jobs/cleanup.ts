@@ -49,4 +49,9 @@ export async function runCleanup(): Promise<void> {
       console.error(`Cleanup failed for project ${project.id}:`, err);
     }
   }
+
+  // Clean up expired sessions
+  await prisma.session.deleteMany({
+    where: { expiresAt: { lt: new Date() } },
+  });
 }

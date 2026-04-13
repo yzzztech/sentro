@@ -25,9 +25,17 @@ export async function POST(req: NextRequest) {
     }
 
     const passwordHash = await hashPassword(password);
-    const user = await prisma.user.create({
-      data: { email, passwordHash },
-    });
+    let user;
+    try {
+      user = await prisma.user.create({
+        data: { email, passwordHash },
+      });
+    } catch (err: unknown) {
+      if (err && typeof err === "object" && "code" in err && err.code === "P2002") {
+        return NextResponse.json({ error: "Setup already completed" }, { status: 400 });
+      }
+      throw err;
+    }
 
     await createSession(user.id);
 

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth/middleware";
 import { prisma } from "@/lib/db/prisma";
 import crypto from "crypto";
+import { validateWebhookUrl } from "@/lib/webhooks/validate-url";
 
 export async function POST(
   _request: NextRequest,
@@ -42,6 +43,14 @@ export async function POST(
       .update(body)
       .digest("hex");
     headers["X-Sentro-Signature"] = `sha256=${sig}`;
+  }
+
+  const urlValidation = await validateWebhookUrl(webhook.url);
+  if (!urlValidation.valid) {
+    return NextResponse.json(
+      { error: `Webhook URL is blocked: ${urlValidation.error}` },
+      { status: 400 }
+    );
   }
 
   try {
