@@ -1,0 +1,259 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  passwordHash String    @map("password_hash")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  sessions     Session[]
+
+  @@map("users")
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  token     String   @unique
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@map("sessions")
+}
+
+model Project {
+  id                 String       @id @default(uuid())
+  name               String
+  dsnToken           String       @unique @map("dsn_token")
+  retentionDays      Int          @default(30) @map("retention_days")
+  rateLimitPerMinute Int          @default(1000) @map("rate_limit_per_minute")
+  createdAt          DateTime     @default(now()) @map("created_at")
+  updatedAt          DateTime     @updatedAt @map("updated_at")
+  eventGroups        EventGroup[]
+  events             Event[]
+  agentRuns          AgentRun[]
+  steps              Step[]
+  toolCalls          ToolCall[]
+  llmCalls           LlmCall[]
+  alertRules         AlertRule[]
+  alertHistory       AlertHistory[]
+
+  @@map("projects")
+}
+
+enum EventLevel {
+  error
+  warning
+  info
+  debug
+}
+
+enum GroupStatus {
+  open
+  resolved
+  ignored
+}
+
+model EventGroup {
+  id          String      @id @default(uuid())
+  projectId   String      @map("project_id")
+  fingerprint String
+  title       String
+  level       EventLevel  @default(error)
+  firstSeen   DateTime    @map("first_seen")
+  lastSeen    DateTime    @map("last_seen")
+  count       Int         @default(0)
+  status      GroupStatus @default(open)
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
+  project     Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  events      Event[]
+
+  @@unique([projectId, fingerprint])
+  @@index([projectId, status, lastSeen(sort: Desc)])
+  @@map("event_groups")
+}
+
+model Event {
+  id          String     @id @default(uuid())
+  projectId   String     @map("project_id")
+  groupId     String     @map("group_id")
+  runId       String?    @map("run_id")
+  fingerprint String
+  level       EventLevel
+  message     String
+  stackTrace  String?    @map("stack_trace")
+  tags        Json       @default("{}")
+  context     Json       @default("{}")
+  timestamp   DateTime
+  receivedAt  DateTime   @default(now()) @map("received_at")
+  project     Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  group       EventGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  run         AgentRun?  @relation(fields: [runId], references: [id], onDelete: SetNull)
+
+  @@index([groupId, timestamp(sort: Desc)])
+  @@index([projectId, receivedAt(sort: Desc)])
+  @@index([runId])
+  @@map("events")
+}
+
+enum RunStatus {
+  running
+  success
+  failure
+  timeout
+}
+
+model AgentRun {
+  id           String    @id @default(uuid())
+  projectId    String    @map("project_id")
+  agentName    String    @map("agent_name")
+  trigger      String?
+  goal         String?
+  model        String?
+  status       RunStatus @default(running)
+  totalTokens  Int       @default(0) @map("total_tokens")
+  totalCost    Decimal   @default(0) @map("total_cost") @db.Decimal(12, 6)
+  errorType    String?   @map("error_type")
+  errorMessage String?   @map("error_message")
+  startedAt    DateTime  @map("started_at")
+  finishedAt   DateTime? @map("finished_at")
+  metadata     Json      @default("{}")
+  project      Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  steps        Step[]
+  toolCalls    ToolCall[]
+  llmCalls     LlmCall[]
+  events       Event[]
+
+  @@index([projectId, startedAt(sort: Desc)])
+  @@index([projectId, agentName, startedAt(sort: Desc)])
+  @@index([projectId, status, startedAt(sort: Desc)])
+  @@map("agent_runs")
+}
+
+enum StepType {
+  thought
+  action
+  observation
+}
+
+model Step {
+  id             String    @id @default(uuid())
+  runId          String    @map("run_id")
+  projectId      String    @map("project_id")
+  sequenceNumber Int       @map("sequence_number")
+  type           StepType  @default(action)
+  content        String
+  startedAt      DateTime  @map("started_at")
+  finishedAt     DateTime? @map("finished_at")
+  metadata       Json      @default("{}")
+  run            AgentRun  @relation(fields: [runId], references: [id], onDelete: Cascade)
+  project        Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  toolCalls      ToolCall[]
+  llmCalls       LlmCall[]
+
+  @@index([runId, sequenceNumber])
+  @@index([projectId, startedAt(sort: Desc)])
+  @@map("steps")
+}
+
+enum CallStatus {
+  success
+  error
+}
+
+model ToolCall {
+  id           String     @id @default(uuid())
+  stepId       String     @map("step_id")
+  runId        String     @map("run_id")
+  projectId    String     @map("project_id")
+  toolName     String     @map("tool_name")
+  input        Json       @default("{}")
+  output       Json       @default("{}")
+  status       CallStatus @default(success)
+  latencyMs    Int        @map("latency_ms")
+  errorMessage String?    @map("error_message")
+  startedAt    DateTime   @map("started_at")
+  step         Step       @relation(fields: [stepId], references: [id], onDelete: Cascade)
+  run          AgentRun   @relation(fields: [runId], references: [id], onDelete: Cascade)
+  project      Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([runId])
+  @@index([projectId, toolName, startedAt(sort: Desc)])
+  @@index([projectId, latencyMs(sort: Desc)])
+  @@map("tool_calls")
+}
+
+model LlmCall {
+  id               String   @id @default(uuid())
+  stepId           String   @map("step_id")
+  runId            String   @map("run_id")
+  projectId        String   @map("project_id")
+  model            String
+  provider         String
+  promptTokens     Int      @default(0) @map("prompt_tokens")
+  completionTokens Int      @default(0) @map("completion_tokens")
+  totalTokens      Int      @default(0) @map("total_tokens")
+  cost             Decimal  @default(0) @db.Decimal(12, 6)
+  latencyMs        Int      @map("latency_ms")
+  temperature      Float?
+  messages         Json?
+  response         Json?
+  startedAt        DateTime @map("started_at")
+  step             Step     @relation(fields: [stepId], references: [id], onDelete: Cascade)
+  run              AgentRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  project          Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([runId])
+  @@index([projectId, model, startedAt(sort: Desc)])
+  @@index([projectId, latencyMs(sort: Desc)])
+  @@map("llm_calls")
+}
+
+enum AlertType {
+  error_spike
+  failure_rate
+  cost_threshold
+}
+
+model AlertRule {
+  id              String         @id @default(uuid())
+  projectId       String         @map("project_id")
+  name            String
+  type            AlertType
+  config          Json
+  webhookUrl      String         @map("webhook_url")
+  enabled         Boolean        @default(true)
+  lastTriggeredAt DateTime?      @map("last_triggered_at")
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
+  project         Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  history         AlertHistory[]
+
+  @@index([projectId, enabled])
+  @@map("alert_rules")
+}
+
+model AlertHistory {
+  id            String    @id @default(uuid())
+  ruleId        String    @map("rule_id")
+  projectId     String    @map("project_id")
+  triggeredAt   DateTime  @map("triggered_at")
+  payload       Json
+  webhookStatus Int?      @map("webhook_status")
+  rule          AlertRule @relation(fields: [ruleId], references: [id], onDelete: Cascade)
+  project       Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([ruleId, triggeredAt(sort: Desc)])
+  @@index([projectId, triggeredAt(sort: Desc)])
+  @@map("alert_history")
+}

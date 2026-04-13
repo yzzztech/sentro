@@ -2,6 +2,9 @@
   "name": "@sentro/web",
   "private": true,
   "version": "0.1.0",
+  "prisma": {
+    "schema": "lib/db/schema.prisma"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
