@@ -3,6 +3,7 @@ import { Prisma } from "@prisma/client";
 import { generateFingerprint } from "./fingerprint";
 import { EventLevel, RunStatus, StepType, CallStatus } from "@prisma/client";
 import { Decimal } from "@prisma/client/runtime/library";
+import { dispatchWebhooks, WebhookEvent } from "@/lib/webhooks/dispatcher";
 
 type IngestEvent = Record<string, unknown>;
 
@@ -90,6 +91,12 @@ export async function processFlush(projectDsnToken: string, events: IngestEvent[
           const message = typeof event.message === "string" ? event.message : JSON.stringify(event);
           const timestamp = toDate(event.timestamp);
 
+          // Fetch existing group before upsert to detect new vs regression
+          const existingGroup = await prisma.eventGroup.findUnique({
+            where: { projectId_fingerprint: { projectId: project.id, fingerprint } },
+            select: { id: true, count: true, status: true },
+          });
+
           const group = await prisma.eventGroup.upsert({
             where: { projectId_fingerprint: { projectId: project.id, fingerprint } },
             create: {
@@ -105,8 +112,35 @@ export async function processFlush(projectDsnToken: string, events: IngestEvent[
               lastSeen: timestamp,
               count: { increment: 1 },
               level,
+              // Re-open resolved groups on new occurrence
+              ...(existingGroup?.status === "resolved" ? { status: "open" } : {}),
             },
           });
+
+          // Dispatch webhooks (fire-and-forget)
+          if (!existingGroup) {
+            // Brand-new error group
+            dispatchWebhooks(project.id, WebhookEvent.error_new, {
+              groupId: group.id,
+              title: group.title,
+              level,
+              message,
+              stackTrace: str(event, "stackTrace", "stack_trace") ?? undefined,
+              tags: toJson(event.tags),
+              firstSeen: timestamp.toISOString(),
+            });
+          } else if (existingGroup.status === "resolved") {
+            // Regression: was resolved, now re-opened
+            dispatchWebhooks(project.id, WebhookEvent.error_regression, {
+              groupId: group.id,
+              title: group.title,
+              level,
+              message,
+              stackTrace: str(event, "stackTrace", "stack_trace") ?? undefined,
+              tags: toJson(event.tags),
+              firstSeen: group.firstSeen,
+            });
+          }
 
           await prisma.event.create({
             data: {
@@ -150,17 +184,73 @@ export async function processFlush(projectDsnToken: string, events: IngestEvent[
             _sum: { totalTokens: true, cost: true },
           });
 
+          // Fetch the run for context before updating
+          const existingRun = await prisma.agentRun.findUnique({
+            where: { id: runId },
+            select: { agentName: true, goal: true, model: true, startedAt: true },
+          });
+
+          // Aggregate step/tool/llm counts for rich payload
+          const [stepCount, toolCount, llmCount] = await Promise.all([
+            prisma.step.count({ where: { runId } }),
+            prisma.toolCall.count({ where: { runId } }),
+            prisma.llmCall.count({ where: { runId } }),
+          ]);
+
+          const runStatus = toRunStatus(event.status);
+          const finishedAt = toDate(event.timestamp);
+          const totalTokens = llmAgg._sum.totalTokens ?? 0;
+          const totalCost = llmAgg._sum.cost ?? new Decimal(0);
+          const duration = existingRun
+            ? finishedAt.getTime() - existingRun.startedAt.getTime()
+            : 0;
+
           await prisma.agentRun.update({
             where: { id: runId },
             data: {
-              status: toRunStatus(event.status),
-              finishedAt: toDate(event.timestamp),
-              totalTokens: llmAgg._sum.totalTokens ?? 0,
-              totalCost: llmAgg._sum.cost ?? new Decimal(0),
+              status: runStatus,
+              finishedAt,
+              totalTokens,
+              totalCost,
               errorType: str(event, "errorType", "error_type"),
               errorMessage: str(event, "errorMessage", "error_message"),
             },
           });
+
+          // Build shared run payload
+          const runPayload: Record<string, unknown> = {
+            runId,
+            agent: existingRun?.agentName ?? "unknown",
+            agentName: existingRun?.agentName ?? "unknown",
+            goal: existingRun?.goal ?? null,
+            model: existingRun?.model ?? null,
+            status: runStatus,
+            duration,
+            totalTokens,
+            totalCost: Number(totalCost),
+            errorType: str(event, "errorType", "error_type"),
+            errorMessage: str(event, "errorMessage", "error_message"),
+            steps: stepCount,
+            toolCalls: toolCount,
+            llmCalls: llmCount,
+          };
+
+          // Dispatch run.completed for every finished run
+          dispatchWebhooks(project.id, WebhookEvent.run_completed, runPayload);
+
+          // Dispatch run.failed for failures and timeouts
+          if (runStatus === RunStatus.failure || runStatus === RunStatus.timeout) {
+            dispatchWebhooks(project.id, WebhookEvent.run_failed, runPayload);
+          }
+
+          // Dispatch cost.spike if total cost exceeds webhook filter threshold
+          if (Number(totalCost) > 0) {
+            dispatchWebhooks(project.id, WebhookEvent.cost_spike, {
+              ...runPayload,
+              costThreshold: null, // actual threshold checked per-webhook in dispatcher filter
+            });
+          }
+
           break;
         }
 
