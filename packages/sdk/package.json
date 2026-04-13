@@ -1,9 +1,19 @@
 {
   "name": "@sentro/sdk",
-  "version": "0.1.0",
+  "version": "0.1.1",
+  "description": "Error tracking and agent observability for AI agents — TypeScript SDK for Sentro",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": ["dist"],
+  "files": ["dist", "README.md"],
+  "keywords": ["sentro", "observability", "error-tracking", "ai-agents", "llm", "tracing", "sentry-alternative"],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yzzztech/sentro.git",
+    "directory": "packages/sdk"
+  },
+  "homepage": "https://github.com/yzzztech/sentro",
+  "bugs": "https://github.com/yzzztech/sentro/issues",
   "scripts": {
     "build": "tsc",
     "test": "vitest run",
