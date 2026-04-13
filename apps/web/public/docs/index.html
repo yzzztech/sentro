@@ -1,0 +1,1649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sentro Documentation — Error Tracking & Agent Observability</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0a0a0f;
+      --sidebar:   #111118;
+      --card:      #1a1a24;
+      --card2:     #13131c;
+      --green:     #22c55e;
+      --green-dim: #16a34a;
+      --purple:    #a78bfa;
+      --blue:      #60a5fa;
+      --amber:     #f59e0b;
+      --red:       #f87171;
+      --text:      #e2e8f0;
+      --text-sec:  #94a3b8;
+      --border:    #1e293b;
+      --border2:   #0f172a;
+      --sidebar-w: 260px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 15px;
+      line-height: 1.7;
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* ─── SIDEBAR ─────────────────────────────────────────── */
+    #sidebar {
+      width: var(--sidebar-w);
+      background: var(--sidebar);
+      border-right: 1px solid var(--border);
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      overflow-y: auto;
+      z-index: 100;
+      transition: transform .25s ease;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar-logo {
+      padding: 20px 20px 16px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .sidebar-logo .logo-name {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--green);
+      letter-spacing: -.02em;
+    }
+
+    .sidebar-logo .logo-tagline {
+      font-size: .72rem;
+      color: var(--text-sec);
+      margin-top: 2px;
+    }
+
+    #sidebar nav { padding: 12px 0 24px; flex: 1; }
+
+    .nav-section {
+      padding: 10px 20px 4px;
+      font-size: .68rem;
+      font-weight: 600;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--text-sec);
+    }
+
+    #sidebar a {
+      display: block;
+      padding: 6px 20px;
+      color: var(--text-sec);
+      text-decoration: none;
+      font-size: .84rem;
+      border-left: 2px solid transparent;
+      transition: color .15s, border-color .15s, background .15s;
+    }
+
+    #sidebar a:hover {
+      color: var(--text);
+      background: rgba(255,255,255,.04);
+    }
+
+    #sidebar a.active {
+      color: var(--green);
+      border-left-color: var(--green);
+      background: rgba(34,197,94,.06);
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: .65rem;
+      font-weight: 600;
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+
+    .badge-green  { background: rgba(34,197,94,.15); color: var(--green); }
+    .badge-purple { background: rgba(167,139,250,.15); color: var(--purple); }
+    .badge-blue   { background: rgba(96,165,250,.15); color: var(--blue); }
+    .badge-amber  { background: rgba(245,158,11,.15); color: var(--amber); }
+    .badge-red    { background: rgba(248,113,113,.15); color: var(--red); }
+
+    /* ─── HAMBURGER ───────────────────────────────────────── */
+    #hamburger {
+      display: none;
+      position: fixed;
+      top: 14px; left: 14px;
+      z-index: 200;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 10px;
+      cursor: pointer;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    #hamburger span {
+      display: block;
+      width: 20px; height: 2px;
+      background: var(--text);
+      border-radius: 2px;
+      transition: .2s;
+    }
+
+    #overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.5);
+      z-index: 99;
+    }
+
+    /* ─── MAIN ────────────────────────────────────────────── */
+    #main {
+      margin-left: var(--sidebar-w);
+      flex: 1;
+      max-width: calc(100% - var(--sidebar-w));
+      padding: 0;
+    }
+
+    .content-wrap {
+      max-width: 840px;
+      margin: 0 auto;
+      padding: 48px 40px 80px;
+    }
+
+    /* ─── HERO ────────────────────────────────────────────── */
+    .hero {
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 56px;
+      padding-bottom: 48px;
+    }
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(34,197,94,.08);
+      border: 1px solid rgba(34,197,94,.2);
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: .75rem;
+      color: var(--green);
+      font-weight: 600;
+      letter-spacing: .03em;
+      margin-bottom: 20px;
+    }
+
+    .hero h1 {
+      font-size: 2.8rem;
+      font-weight: 800;
+      letter-spacing: -.04em;
+      line-height: 1.1;
+      margin-bottom: 18px;
+    }
+
+    .hero h1 span { color: var(--green); }
+
+    .hero-lead {
+      font-size: 1.1rem;
+      color: var(--text-sec);
+      max-width: 620px;
+      margin-bottom: 32px;
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+      gap: 12px;
+      margin-top: 32px;
+    }
+
+    .feature-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+    }
+
+    .feature-icon {
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
+      margin-bottom: 10px;
+    }
+
+    .feature-card h3 { font-size: .88rem; font-weight: 600; margin-bottom: 4px; }
+    .feature-card p  { font-size: .78rem; color: var(--text-sec); line-height: 1.5; }
+
+    /* ─── SECTIONS ────────────────────────────────────────── */
+    .section { margin-bottom: 64px; }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 28px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .section-num {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px; height: 28px;
+      background: rgba(34,197,94,.1);
+      border: 1px solid rgba(34,197,94,.3);
+      border-radius: 6px;
+      font-size: .75rem;
+      font-weight: 700;
+      color: var(--green);
+      flex-shrink: 0;
+    }
+
+    h2 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -.02em;
+    }
+
+    h3 {
+      font-size: 1.05rem;
+      font-weight: 600;
+      margin: 28px 0 12px;
+      color: var(--text);
+    }
+
+    h4 {
+      font-size: .9rem;
+      font-weight: 600;
+      margin: 20px 0 8px;
+      color: var(--text-sec);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      font-size: .72rem;
+    }
+
+    p { margin-bottom: 14px; color: var(--text-sec); }
+    p:last-child { margin-bottom: 0; }
+
+    ul, ol {
+      padding-left: 20px;
+      margin-bottom: 14px;
+      color: var(--text-sec);
+    }
+    li { margin-bottom: 6px; }
+    li strong { color: var(--text); }
+
+    a { color: var(--green); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ─── CODE ────────────────────────────────────────────── */
+    code {
+      font-family: "SF Mono", "Fira Code", "Fira Mono", Menlo, Consolas, monospace;
+      font-size: .83em;
+      background: var(--card2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1px 5px;
+      color: var(--green);
+    }
+
+    .code-block {
+      position: relative;
+      margin: 16px 0;
+    }
+
+    .code-block pre {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px 24px;
+      overflow-x: auto;
+      font-family: "SF Mono", "Fira Code", Menlo, Consolas, monospace;
+      font-size: .82rem;
+      line-height: 1.65;
+      white-space: pre;
+    }
+
+    .code-block .lang-label {
+      position: absolute;
+      top: -1px; right: 44px;
+      background: var(--border);
+      border-radius: 0 0 6px 6px;
+      padding: 2px 10px;
+      font-size: .65rem;
+      font-weight: 600;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: var(--text-sec);
+    }
+
+    .copy-btn {
+      position: absolute;
+      top: 10px; right: 10px;
+      background: var(--card2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 5px 10px;
+      font-size: .72rem;
+      color: var(--text-sec);
+      cursor: pointer;
+      transition: color .15s, background .15s;
+      font-family: inherit;
+    }
+
+    .copy-btn:hover { color: var(--text); background: var(--border); }
+    .copy-btn.copied { color: var(--green); }
+
+    /* ─── SYNTAX COLORS ───────────────────────────────────── */
+    .kw  { color: #c792ea; }   /* keyword */
+    .fn  { color: #82aaff; }   /* function */
+    .str { color: #c3e88d; }   /* string */
+    .num { color: #f78c6c; }   /* number */
+    .cmt { color: #546e7a; font-style: italic; } /* comment */
+    .cls { color: #ffcb6b; }   /* class */
+    .prop{ color: #89ddff; }   /* property */
+    .punc{ color: #89ddff; }   /* punctuation */
+    .tag { color: var(--red); }
+    .grn { color: var(--green); }
+    .amb { color: var(--amber); }
+    .pur { color: var(--purple); }
+    .blu { color: var(--blue); }
+
+    /* ─── TABLES ──────────────────────────────────────────── */
+    .table-wrap { overflow-x: auto; margin: 16px 0; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .83rem;
+    }
+
+    th {
+      text-align: left;
+      padding: 10px 14px;
+      background: var(--card2);
+      border-bottom: 1px solid var(--border);
+      color: var(--text-sec);
+      font-weight: 600;
+      font-size: .72rem;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+
+    td {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border2);
+      color: var(--text-sec);
+    }
+
+    tr:last-child td { border-bottom: none; }
+    td:first-child { color: var(--text); font-family: "SF Mono", Menlo, monospace; font-size: .8rem; }
+
+    tbody tr:hover td { background: rgba(255,255,255,.02); }
+
+    /* ─── CALLOUTS ────────────────────────────────────────── */
+    .callout {
+      border-radius: 8px;
+      padding: 14px 16px;
+      margin: 16px 0;
+      border-left: 3px solid;
+      font-size: .87rem;
+    }
+
+    .callout-info    { background: rgba(96,165,250,.07);  border-color: var(--blue);   color: #93c5fd; }
+    .callout-tip     { background: rgba(34,197,94,.07);   border-color: var(--green);  color: #86efac; }
+    .callout-warning { background: rgba(245,158,11,.07);  border-color: var(--amber);  color: #fcd34d; }
+    .callout-danger  { background: rgba(248,113,113,.07); border-color: var(--red);    color: #fca5a5; }
+
+    .callout strong { display: block; margin-bottom: 4px; font-size: .8rem; text-transform: uppercase; letter-spacing: .05em; }
+
+    /* ─── STEP LIST ───────────────────────────────────────── */
+    .step-list { list-style: none; padding: 0; counter-reset: steps; }
+
+    .step-list li {
+      counter-increment: steps;
+      display: flex;
+      gap: 16px;
+      margin-bottom: 20px;
+      align-items: flex-start;
+    }
+
+    .step-list li::before {
+      content: counter(steps);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 28px;
+      height: 28px;
+      background: var(--green);
+      color: #000;
+      border-radius: 50%;
+      font-weight: 700;
+      font-size: .8rem;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .step-list li .step-body { flex: 1; }
+    .step-list li .step-body strong { display: block; color: var(--text); margin-bottom: 4px; }
+    .step-list li .step-body p { margin: 0; }
+
+    /* ─── API ENDPOINT ────────────────────────────────────── */
+    .endpoint {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin: 20px 0 12px;
+      font-family: "SF Mono", Menlo, monospace;
+      font-size: .85rem;
+    }
+
+    .method {
+      font-weight: 700;
+      font-size: .75rem;
+      padding: 3px 8px;
+      border-radius: 4px;
+      flex-shrink: 0;
+    }
+
+    .method-get  { background: rgba(34,197,94,.15);  color: var(--green); }
+    .method-post { background: rgba(96,165,250,.15);  color: var(--blue); }
+
+    .endpoint-path { color: var(--text); }
+
+    /* ─── ARCH DIAGRAM ────────────────────────────────────── */
+    .arch-diagram {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 28px;
+      margin: 20px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .arch-row {
+      display: flex;
+      align-items: center;
+      gap: 0;
+    }
+
+    .arch-box {
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-size: .8rem;
+      font-weight: 600;
+      text-align: center;
+      border: 1px solid;
+      min-width: 120px;
+    }
+
+    .arch-arrow {
+      color: var(--text-sec);
+      font-size: 1.1rem;
+      padding: 0 8px;
+      flex-shrink: 0;
+    }
+
+    .arch-green  { background: rgba(34,197,94,.1);  border-color: rgba(34,197,94,.3);  color: var(--green); }
+    .arch-blue   { background: rgba(96,165,250,.1); border-color: rgba(96,165,250,.3); color: var(--blue); }
+    .arch-purple { background: rgba(167,139,250,.1);border-color: rgba(167,139,250,.3);color: var(--purple); }
+    .arch-amber  { background: rgba(245,158,11,.1); border-color: rgba(245,158,11,.3); color: var(--amber); }
+
+    .arch-spacer { flex: 1; }
+    .arch-center { justify-content: center; flex-wrap: wrap; gap: 8px; }
+
+    /* ─── ROADMAP ─────────────────────────────────────────── */
+    .roadmap-item {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .roadmap-version {
+      min-width: 50px;
+      font-size: .75rem;
+      font-weight: 700;
+      color: var(--green);
+      padding-top: 2px;
+    }
+
+    .roadmap-content h3 { margin: 0 0 6px; font-size: .95rem; }
+    .roadmap-content ul { margin: 0; }
+
+    /* ─── SCHEMA TABLE ────────────────────────────────────── */
+    .schema-section { margin-bottom: 24px; }
+
+    .schema-title {
+      font-size: .8rem;
+      font-weight: 700;
+      color: var(--purple);
+      background: rgba(167,139,250,.08);
+      border: 1px solid rgba(167,139,250,.2);
+      border-radius: 6px;
+      padding: 4px 10px;
+      display: inline-block;
+      margin-bottom: 8px;
+    }
+
+    /* ─── RESPONSIVE ──────────────────────────────────────── */
+    @media (max-width: 768px) {
+      #sidebar { transform: translateX(-100%); }
+      #sidebar.open { transform: translateX(0); }
+      #overlay.open { display: block; }
+      #hamburger { display: flex; }
+
+      #main {
+        margin-left: 0;
+        max-width: 100%;
+      }
+
+      .content-wrap { padding: 56px 20px 60px; }
+
+      .hero h1 { font-size: 1.9rem; }
+      .hero-lead { font-size: .95rem; }
+
+      .feature-grid { grid-template-columns: 1fr; }
+
+      .arch-row { flex-direction: column; align-items: stretch; }
+      .arch-arrow { transform: rotate(90deg); text-align: center; }
+    }
+
+    /* ─── SCROLLBAR ───────────────────────────────────────── */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #334155; }
+  </style>
+</head>
+<body>
+
+<!-- Hamburger -->
+<button id="hamburger" aria-label="Open navigation" onclick="toggleSidebar()">
+  <span></span><span></span><span></span>
+</button>
+
+<!-- Overlay -->
+<div id="overlay" onclick="closeSidebar()"></div>
+
+<!-- Sidebar -->
+<aside id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-name">sentro</div>
+    <div class="logo-tagline">Error tracking &amp; agent observability</div>
+  </div>
+  <nav>
+    <div class="nav-section">Getting Started</div>
+    <a href="#intro">Introduction</a>
+    <a href="#quickstart">Quick Start</a>
+
+    <div class="nav-section">SDK</div>
+    <a href="#install">Installation &amp; Setup</a>
+    <a href="#errors">Error Tracking</a>
+    <a href="#agents">Agent Observability <span class="badge badge-purple">AI</span></a>
+
+    <div class="nav-section">Dashboard</div>
+    <a href="#dashboard">Dashboard Guide</a>
+
+    <div class="nav-section">Reference</div>
+    <a href="#api">API Reference</a>
+    <a href="#config">Configuration</a>
+    <a href="#selfhost">Self-Hosting</a>
+
+    <div class="nav-section">Internals</div>
+    <a href="#architecture">Architecture</a>
+    <a href="#roadmap">Roadmap</a>
+  </nav>
+</aside>
+
+<!-- Main -->
+<main id="main">
+  <div class="content-wrap">
+
+    <!-- ══════════════════════════════════════════════════════ -->
+    <!-- HERO                                                   -->
+    <!-- ══════════════════════════════════════════════════════ -->
+    <section class="hero" id="intro">
+      <div class="hero-eyebrow">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="4" fill="#22c55e"/></svg>
+        Open Source · Self-Hostable · v0.1.0
+      </div>
+      <h1><span>Sentro</span> — Error Tracking &amp;<br>Agent Observability</h1>
+      <p class="hero-lead">
+        Error tracking and observability built for AI agents. Sentro gives you
+        deep visibility into every run, step, tool call, and LLM call your agents
+        make — plus traditional error tracking for the rest of your stack.
+      </p>
+
+      <div class="callout callout-tip">
+        <strong>How Sentro differs from Sentry</strong>
+        Sentry groups errors by stack trace and release. Sentro does that too — and
+        adds an <strong>agent-first hierarchy</strong>: every error, LLM call, and
+        tool call can be traced back to its parent
+        <code>Run → Step → ToolCall / LlmCall</code>, so you can replay exactly
+        what your agent did before it failed.
+      </div>
+
+      <div class="feature-grid">
+        <div class="feature-card">
+          <div class="feature-icon" style="background:rgba(248,113,113,.1)">🐛</div>
+          <h3>Error Tracking</h3>
+          <p>Automatic fingerprinting, stack trace capture, status management, and affected-run linking.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon" style="background:rgba(167,139,250,.1)">🤖</div>
+          <h3>Agent Run Tracing</h3>
+          <p>Track every agent run end-to-end with goal, model, trigger, and step-by-step timeline.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon" style="background:rgba(96,165,250,.1)">🔧</div>
+          <h3>Tool Call Monitoring</h3>
+          <p>Latency, input/output, error rates — broken down per tool for every step.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon" style="background:rgba(34,197,94,.1)">🧠</div>
+          <h3>LLM Call Tracking</h3>
+          <p>Model, provider, token counts, latency, and cost captured for each inference call.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon" style="background:rgba(245,158,11,.1)">💰</div>
+          <h3>Cost Tracking</h3>
+          <p>Aggregate LLM spend by model, run, and time range. Set threshold alerts before bills surprise you.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon" style="background:rgba(34,197,94,.1)">🔔</div>
+          <h3>Alerting</h3>
+          <p>Webhook alerts for error spikes, agent failure rate, and cost threshold breaches.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════ -->
+    <!-- QUICK START                                            -->
+    <!-- ══════════════════════════════════════════════════════ -->
+    <section class="section" id="quickstart">
+      <div class="section-header">
+        <div class="section-num">1</div>
+        <h2>Quick Start</h2>
+      </div>
+
+      <h3>Prerequisites</h3>
+      <ul>
+        <li><strong>Docker</strong> 24+ and <strong>Docker Compose</strong> v2+</li>
+        <li>A terminal and a browser — that's it</li>
+      </ul>
+
+      <h3>Start Sentro in three steps</h3>
+
+      <ol class="step-list">
+        <li>
+          <div class="step-body">
+            <strong>Clone the repository</strong>
+            <div class="code-block">
+              <div class="lang-label">bash</div>
+              <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              <pre><span class="fn">git</span> clone https://github.com/your-org/sentro.git
+<span class="fn">cd</span> sentro</pre>
+            </div>
+          </div>
+        </li>
+        <li>
+          <div class="step-body">
+            <strong>Start services with Docker Compose</strong>
+            <div class="code-block">
+              <div class="lang-label">bash</div>
+              <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              <pre><span class="fn">docker</span> compose up -d</pre>
+            </div>
+            <p>This starts the Next.js application on port <code>3000</code> and a Postgres 16 database. First boot takes ~30 s while it builds the image.</p>
+          </div>
+        </li>
+        <li>
+          <div class="step-body">
+            <strong>Open your browser</strong>
+            <p>Navigate to <a href="http://localhost:3000">http://localhost:3000</a>. You'll be redirected to setup to create your admin account.</p>
+          </div>
+        </li>
+      </ol>
+
+      <h3>First-time setup</h3>
+      <ol>
+        <li>Fill in your email and a strong password on the <strong>Setup</strong> page — this creates the first admin account. Setup is only available once; if you need to reset, clear the <code>users</code> table.</li>
+        <li>Log in and click <strong>New Project</strong> in the sidebar.</li>
+        <li>Give your project a name (e.g. <code>my-agent</code>) and click <strong>Create</strong>.</li>
+        <li>Copy the <strong>DSN</strong> shown on the project page — it looks like:<br>
+          <code>http://&lt;token&gt;@localhost:3000/api/ingest/&lt;projectId&gt;</code></li>
+      </ol>
+
+      <div class="callout callout-warning">
+        <strong>Production note</strong>
+        Set <code>SESSION_SECRET</code> to a random 32-byte hex string before exposing Sentro to the internet. The default value is only safe for local development.
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════ -->
+    <!-- SDK INSTALLATION                                       -->
+    <!-- ══════════════════════════════════════════════════════ -->
+    <section class="section" id="install">
+      <div class="section-header">
+        <div class="section-num">2</div>
+        <h2>SDK Installation &amp; Setup</h2>
+      </div>
+
+      <h3>Install</h3>
+      <div class="code-block">
+        <div class="lang-label">bash</div>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        <pre><span class="fn">npm</span> install @sentro/sdk
+<span class="cmt"># or</span>
+<span class="fn">pnpm</span> add @sentro/sdk
+<span class="fn">yarn</span> add @sentro/sdk</pre>
+      </div>
+
+      <h3>Initialize</h3>
+      <p>Create a single <code>Sentro</code> instance and export it — typically in <code>lib/sentro.ts</code>:</p>
+      <div class="code-block">
+        <div class="lang-label">typescript</div>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        <pre><span class="kw">import</span> <span class="punc">{</span> <span class="cls">Sentro</span> <span class="punc">}</span> <span class="kw">from</span> <span class="str">"@sentro/sdk"</span><span class="punc">;</span>
+
+<span class="kw">export const</span> <span class="prop">sentro</span> <span class="punc">=</span> <span class="kw">new</span> <span class="cls">Sentro</span><span class="punc">({</span>
+  <span class="prop">dsn</span><span class="punc">:</span> <span class="str">"http://abc123@localhost:3000/api/ingest/proj_xyz"</span><span class="punc">,</span>
+  <span class="prop">capturePrompts</span><span class="punc">:</span> <span class="kw">false</span><span class="punc">,</span>  <span class="cmt">// set true to store prompt/response bodies</span>
+  <span class="prop">flushIntervalMs</span><span class="punc">:</span> <span class="num">1000</span><span class="punc">,</span>  <span class="cmt">// batch send every 1 s</span>
+  <span class="prop">maxBatchSize</span><span class="punc">:</span> <span class="num">100</span><span class="punc">,</span>       <span class="cmt">// flush immediately when buffer hits 100</span>
+  <span class="prop">defaultTags</span><span class="punc">:</span> <span class="punc">{</span>
+    <span class="prop">env</span><span class="punc">:</span> <span class="str">"production"</span><span class="punc">,</span>
+    <span class="prop">version</span><span class="punc">:</span> <span class="str">"1.4.2"</span><span class="punc">,</span>
+  <span class="punc">},</span>
+<span class="punc">});</span></pre>
+      </div>
+
+      <h3>Configuration options</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Option</th><th>Type</th><th>Default</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>dsn</td><td>string</td><td>required</td><td>Full DSN URL from your project settings.</td></tr>
+            <tr><td>capturePrompts</td><td>boolean</td><td>false</td><td>When true, prompt messages and LLM responses are stored verbatim. Keep false if prompts contain PII.</td></tr>
+            <tr><td>flushIntervalMs</td><td>number</td><td>1000</td><td>How often (in ms) the SDK flushes its internal buffer to the ingest endpoint.</td></tr>
+            <tr><td>maxBatchSize</td><td>number</td><td>100</td><td>Maximum number of events per batch. Flush happens immediately when this is reached.</td></tr>
+            <tr><td>defaultTags</td><td>Record&lt;string,string&gt;</td><td>—</td><td>Tags merged into every event sent from this client instance.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout callout-info">
+        <strong>Graceful shutdown</strong>
+        Call <code>await sentro.shutdown()</code> before your process exits to ensure all buffered events are flushed. In serverless environments use <code>await sentro.flush()</code> at the end of each function invocation.
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════ -->
+    <!-- ERROR TRACKING                                         -->
+    <!-- ══════════════════════════════════════════════════════ -->
+    <section class="section" id="errors">
+      <div class="section-header">
+        <div class="section-num">3</div>
+        <h2>SDK Guide — Error Tracking</h2>
+      </div>
+
+      <h3>Capture exceptions</h3>
+      <p>Pass any <code>Error</code> object to <code>captureException</code>. Sentro records the message, stack trace, and any active tags/context.</p>
+      <div class="code-block">
+        <div class="lang-label">typescript</div>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        <pre><span class="kw">import</span> <span class="punc">{</span> <span class="prop">sentro</span> <span class="punc">}</span> <span class="kw">from</span> <span class="str">"./lib/sentro"</span><span class="punc">;</span>
+
+<span class="kw">try</span> <span class="punc">{</span>
+  <span class="kw">await</span> <span class="fn">processOrder</span><span class="punc">(</span><span class="prop">orderId</span><span class="punc">);</span>
+<span class="punc">}</span> <span class="kw">catch</span> <span class="punc">(</span><span class="prop">err</span><span class="punc">) {</span>
+  <span class="prop">sentro</span><span class="punc">.</span><span class="fn">captureException</span><span class="punc">(</span><span class="prop">err</span> <span class="kw">instanceof</span> <span class="cls">Error</span> <span class="punc">?</span> <span class="prop">err</span> <span class="punc">:</span> <span class="kw">new</span> <span class="cls">Error</span><span class="punc">(</span><span class="cls">String</span><span class="punc">(</span><span class="prop">err</span><span class="punc">)));</span>
+  <span class="kw">throw</span> <span class="prop">err</span><span class="punc">;</span>
+<span class="punc">}</span></pre>
+      </div>
+
+      <h3>Capture messages</h3>
+      <p>Send a plain string at a specific severity level: <code>"error"</code>, <code>"warning"</code>, <code>"info"</code>, or <code>"debug"</code>.</p>
+      <div class="code-block">
+        <div class="lang-label">typescript</div>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        <pre><span class="prop">sentro</span><span class="punc">.</span><span class="fn">captureMessage</span><span class="punc">(</span><span class="str">"Payment gateway timed out after 3 retries"</span><span class="punc">,</span> <span class="str">"warning"</span><span class="punc">);</span>
+<span class="prop">sentro</span><span class="punc">.</span><span class="fn">captureMessage</span><span class="punc">(</span><span class="str">"Nightly sync completed successfully"</span><span class="punc">,</span> <span class="str">"info"</span><span class="punc">);</span></pre>
+      </div>
+
+      <h3>Tags and context</h3>
+      <p>Tags are indexed string key/value pairs — useful for filtering in the dashboard. Context stores arbitrary structured data shown alongside each event.</p>
+      <div class="code-block">
+        <div class="lang-label">typescript</div>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        <pre><span class="cmt">// Tags become filter dimensions in the Issues view</span>
+<span class="prop">sentro</span><span class="punc">.</span><span class="fn">setTags</span><span class="punc">({</span>
+  <span class="prop">userId</span><span class="punc">:</span> <span class="prop">user</span><span class="punc">.</span><span class="prop">id</span><span class="punc">,</span>
+  <span class="prop">plan</span><span class="punc">:</span> <span class="str">"enterprise"</span><span class="punc">,</span>
+  <span class="prop">region</span><span class="punc">:</span> <span class="str">"us-east-1"</span><span class="punc">,</span>
+<span class="punc">});</span>
+
+<span class="cmt">// Context stores any JSON — shown in the event detail drawer</span>
+<span class="prop">sentro</span><span class="punc">.</span><span class="fn">setContext</span><span class="punc">({</span>
+  <span class="prop">request</span><span class="punc">:</span> <span class="punc">{</span> <span class="prop">method</span><span class="punc">:</span> <span class="str">"POST"</span><span class="punc">,</span> <span class="prop">url</span><span class="punc">:</span> <span class="str">"/api/checkout"</span><span class="punc">,</span> <span class="prop">ip</span><span class="punc">:</span> <span class="prop">req</span><span class="punc">.</span><span class="prop">ip</span> <span class="punc">},</span>
+  <span class="prop">order</span><span class="punc">:</span> <span class="punc">{</span> <span class="prop">id</span><span class="punc">:</span> <span class="prop">orderId</span><span class="punc">,</span> <span class="prop">total</span><span class="punc">:</span> <span class="prop">cart</span><span class="punc">.</span><span class="prop">total</span> <span class="punc">},</span>
+<span class="punc">});</span></pre>
+      </div>
+
+      <h3>Express global error handler</h3>
+      <div class="code-block">
+        <div class="lang-label">typescript</div>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        <pre><span class="kw">import</span> <span class="cls">express</span> <span class="kw">from</span> <span class="str">"express"</span><span class="punc">;</span>
+<span class="kw">import</span> <span class="punc">{</span> <span class="prop">sentro</span> <span class="punc">}</span> <span class="kw">from</span> <span class="str">"./lib/sentro"</span><span class="punc">;</span>
+
+<span class="kw">const</span> <span class="prop">app</span> <span class="punc">=</span> <span class="fn">express</span><span class="punc">();</span>
+
+<span class="cmt">// … your routes …</span>
+
+<span class="cmt">// Must be last middleware — 4 args = error handler</span>
+<span class="prop">app</span><span class="punc">.</span><span class="fn">use</span><span class="punc">((</span><span class="prop">err</span><span class="punc">:</span> <span class="cls">Error</span><span class="punc">,</span> <span class="prop">req</span><span class="punc">,</span> <span class="prop">res</span><span class="punc">,</span> <span class="prop">next</span><span class="punc">) =&gt; {</span>
+  <span class="prop">sentro</span><span class="punc">.</span><span class="fn">setContext</span><span class="punc">({</span>
+    <span class="prop">request</span><span class="punc">:</span> <span class="punc">{</span>
+      <span class="prop">method</span><span class="punc">:</span> <span class="prop">req</span><span class="punc">.</span><span class="prop">method</span><span class="punc">,</span>
+      <span class="prop">url</span><span class="punc">:</span> <span class="prop">req</span><span class="punc">.</span><span class="prop">originalUrl</span><span class="punc">,</span>
+      <span class="prop">body</span><span class="punc">:</span> <span class="prop">req</span><span class="punc">.</span><span class="prop">body</span><span class="punc">,</span>
+    <span class="punc">},</span>
+  <span class="punc">});</span>
+  <span class="prop">sentro</span><span class="punc">.</span><span class="fn">captureException</span><span class="punc">(</span><span class="prop">err</span><span class="punc">);</span>
+  <span class="prop">res</span><span class="punc">.</span><span class="fn">status</span><span class="punc">(</span><span class="num">500</span><span class="punc">).</span><span class="fn">json</span><span class="punc">({</span> <span class="prop">error</span><span class="punc">:</span> <span class="str">"Internal server error"</span> <span class="punc">});</span>
+<span class="punc">});</span>
+
+<span class="prop">app</span><span class="punc">.</span><span class="fn">listen</span><span class="punc">(</span><span class="num">3001</span><span class="punc">);</span></pre>
+      </div>
+
+      <div class="callout callout-info">
+        <strong>How grouping works</strong>
+        Sentro fingerprints each event by hashing the error type and the first non-library frame of the stack trace. All events with the same fingerprint are merged into a single <em>Issue</em> in the dashboard. Identical errors fired 1000 times show as one issue with a count of 1000.
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════ -->
+    <!-- AGENT OBSERVABILITY                                    -->
+    <!-- ══════════════════════════════════════════════════════ -->
+    <section class="section" id="agents">
+      <div class="section-header">
+        <div class="section-num">4</div>
+        <h2>SDK Guide — Agent Observability <span class="badge badge-purple">AI</span></h2>
+      </div>
+
+      <p>Sentro models agent execution as a four-level hierarchy:</p>
+      <div class="arch-diagram">
+        <div class="arch-row arch-center">
+          <div class="arch-box arch-green">Run</div>
+          <div class="arch-arrow">→</div>
+          <div class="arch-box arch-purple">Step</div>
+          <div class="arch-arrow">→</div>
+          <div class="arch-box arch-blue">ToolCall</div>
+        </div>
+        <div class="arch-row arch-center" style="margin-top:8px">
+          <div style="min-width:120px;text-align:center;color:var(--text-sec);font-size:.75rem">One agent invocation</div>
+          <div style="min-width:20px"></div>
+          <div style="min-width:120px;text-align:center;color:var(--text-sec);font-size:.75rem">Reasoning turn</div>
+          <div style="min-width:20px"></div>
+          <div style="min-width:120px;text-align:center;color:var(--text-sec);font-size:.75rem">External action</div>
+        </div>
+        <div class="arch-row arch-center" style="margin-top:16px">
+          <div class="arch-box arch-amber">LlmCall</div>
+          <div style="color:var(--text-sec);padding:0 8px;font-size:.8rem">also under each Step</div>
+        </div>
+      </div>
+
+      <h3>Explicit API</h3>
+      <p>Full manual control — start and end each entity yourself:</p>
+      <div class="code-block">
+        <div class="lang-label">typescript</div>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        <pre><span class="kw">import</span> <span class="punc">{</span> <span class="prop">sentro</span> <span class="punc">}</span> <span class="kw">from</span> <span class="str">"./lib/sentro"</span><span class="punc">;</span>
+
+<span class="kw">async function</span> <span class="fn">runResearchAgent</span><span class="punc">(</span><span class="prop">query</span><span class="punc">:</span> <span class="kw">string</span><span class="punc">) {</span>
+
+  <span class="cmt">// 1. Start a run</span>
+  <span class="kw">const</span> <span class="prop">run</span> <span class="punc">=</span> <span class="prop">sentro</span><span class="punc">.</span><span class="fn">startRun</span><span class="punc">({</span>
+    <span class="prop">agent</span><span class="punc">:</span>   <span class="str">"research-agent"</span><span class="punc">,</span>
+    <span class="prop">goal</span><span class="punc">:</span>    <span class="prop">query</span><span class="punc">,</span>
+    <span class="prop">model</span><span class="punc">:</span>   <span class="str">"gpt-4o"</span><span class="punc">,</span>
+    <span class="prop">trigger</span><span class="punc">:</span> <span class="str">"api"</span><span class="punc">,</span>
+    <span class="prop">metadata</span><span class="punc">:</span> <span class="punc">{</span> <span class="prop">userId</span><span class="punc">:</span> <span class="str">"u_123"</span> <span class="punc">},</span>
+  <span class="punc">});</span>
+
+  <span class="kw">try</span> <span class="punc">{</span>
+    <span class="cmt">// 2. Create a step (reasoning turn)</span>
+    <span class="kw">const</span> <span class="prop">step1</span> <span class="punc">=</span> <span class="prop">run</span><span class="punc">.</span><span class="fn">step</span><span class="punc">(</span><span class="str">"Search for recent papers"</span><span class="punc">);</span>
+
+    <span class="cmt">// 3. Record an LLM call</span>
+    <span class="kw">const</span> <span class="prop">llm1</span> <span class="punc">=</span> <span class="prop">step1</span><span class="punc">.</span><span class="fn">llmCall</span><span class="punc">({</span>
+      <span class="prop">model</span><span class="punc">:</span>       <span class="str">"gpt-4o"</span><span class="punc">,</span>
+      <span class="prop">provider</span><span class="punc">:</span>    <span class="str">"openai"</span><span class="punc">,</span>
+      <span class="prop">temperature</span><span class="punc">:</span> <span class="num">0.2</span><span class="punc">,</span>
+      <span class="prop">messages</span><span class="punc">:</span> <span class="punc">[</span>
+        <span class="punc">{</span> <span class="prop">role</span><span class="punc">:</span> <span class="str">"system"</span><span class="punc">,</span> <span class="prop">content</span><span class="punc">:</span> <span class="str">"You are a research assistant."</span> <span class="punc">},</span>
+        <span class="punc">{</span> <span class="prop">role</span><span class="punc">:</span> <span class="str">"user"</span><span class="punc">,</span>   <span class="prop">content</span><span class="punc">:</span> <span class="prop">query</span> <span class="punc">},</span>
+      <span class="punc">],</span>
+    <span class="punc">});</span>
+
+    <span class="kw">const</span> <span class="prop">completion</span> <span class="punc">=</span> <span class="kw">await</span> <span class="fn">openai</span><span class="punc">.</span><span class="fn">chat</span><span class="punc">(</span><span class="prop">...</span><span class="punc">);</span>
+
+    <span class="kw">await</span> <span class="prop">llm1</span><span class="punc">.</span><span class="fn">end</span><span class="punc">({</span>
+      <span class="prop">promptTokens</span><span class="punc">:</span>     <span class="prop">completion</span><span class="punc">.</span><span class="prop">usage</span><span class="punc">.</span><span class="prop">prompt_tokens</span><span class="punc">,</span>
+      <span class="prop">completionTokens</span><span class="punc">:</span> <span class="prop">completion</span><span class="punc">.</span><span class="prop">usage</span><span class="punc">.</span><span class="prop">completion_tokens</span><span class="punc">,</span>
+      <span class="prop">cost</span><span class="punc">:</span>             <span class="num">0.0042</span><span class="punc">,</span>   <span class="cmt">// compute from token pricing</span>
+      <span class="prop">response</span><span class="punc">:</span>         <span class="prop">completion</span><span class="punc">.</span><span class="prop">choices</span><span class="punc">[</span><span class="num">0</span><span class="punc">].</span><span class="prop">message</span><span class="punc">,</span>
+    <span class="punc">});</span>
+
+    <span class="cmt">// 4. Record a tool call</span>
+    <span class="kw">const</span> <span class="prop">tc</span> <span class="punc">=</span> <span class="prop">step1</span><span class="punc">.</span><span class="fn">toolCall</span><span class="punc">(</span><span class="str">"web_search"</span><span class="punc">,</span> <span class="punc">{</span>
+      <span class="prop">input</span><span class="punc">:</span> <span class="punc">{</span> <span class="prop">query</span><span class="punc">:</span> <span class="str">"LLM agent evaluation 2025"</span><span class="punc">,</span> <span class="prop">num_results</span><span class="punc">:</span> <span class="num">10</span> <span class="punc">},</span>
+    <span class="punc">});</span>
+
+    <span class="kw">const</span> <span class="prop">results</span> <span class="punc">=</span> <span class="kw">await</span> <span class="fn">webSearch</span><span class="punc">(</span><span class="prop">query</span><span class="punc">);</span>
+    <span class="kw">await</span> <span class="prop">tc</span><span class="punc">.</span><span class="fn">end</span><span class="punc">({</span> <span class="prop">result</span><span class="punc">:</span> <span class="prop">results</span><span class="punc">.</span><span class="prop">slice</span><span class="punc">(</span><span class="num">0</span><span class="punc">,</span> <span class="num">3</span><span class="punc">) });</span>
+
+    <span class="cmt">// 5. End the step</span>
+    <span class="kw">await</span> <span class="prop">step1</span><span class="punc">.</span><span class="fn">end</span><span class="punc">();</span>
+
+    <span class="cmt">// 6. End the run</span>
+    <span class="kw">await</span> <span class="prop">run</span><span class="punc">.</span><span class="fn">end</span><span class="punc">({</span> <span class="prop">status</span><span class="punc">:</span> <span class="str">"success"</span> <span class="punc">});</span>
+    <span class="kw">return</span> <span class="prop">results</span><span class="punc">;</span>
+
+  <span class="punc">}</span> <span class="kw">catch</span> <span class="punc">(</span><span class="prop">err</span><span class="punc">) {</span>
+    <span class="kw">await</span> <span class="prop">run</span><span class="punc">.</span><span class="fn">error</span><span class="punc">(</span><span class="prop">err</span> <span class="kw">instanceof</span> <span class="cls">Error</span> <span class="punc">?</span> <span class="prop">err</span> <span class="punc">:</span> <span class="kw">new</span> <span class="cls">Error</span><span class="punc">(</span><span class="cls">String</span><span class="punc">(</span><span class="prop">err</span><span class="punc">)));</span>
+    <span class="kw">throw</span> <span class="prop">err</span><span class="punc">;</span>
+  <span class="punc">}</span>
+<span class="punc">}</span></pre>
+      </div>
+
+      <h3>Wrapper API</h3>
+      <p>The wrapper API uses callbacks to automatically handle success/failure and call <code>.end()</code> for you. Use it when you want less boilerplate:</p>
+      <div class="code-block">
+        <div class="lang-label">typescript</div>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        <pre><span class="cmt">// sentro.trace() — wraps an entire run</span>
+<span class="kw">const</span> <span class="prop">result</span> <span class="punc">=</span> <span class="kw">await</span> <span class="prop">sentro</span><span class="punc">.</span><span class="fn">trace</span><span class="punc">(</span>
+  <span class="str">"research-agent"</span><span class="punc">,</span>
+  <span class="punc">{</span> <span class="prop">goal</span><span class="punc">:</span> <span class="str">"Summarise AI news for this week"</span><span class="punc">,</span> <span class="prop">model</span><span class="punc">:</span> <span class="str">"claude-3-5-sonnet"</span> <span class="punc">},</span>
+  <span class="kw">async</span> <span class="punc">(</span><span class="prop">run</span><span class="punc">) =&gt; {</span>
+
+    <span class="cmt">// run.trace() — wraps a single step</span>
+    <span class="kw">const</span> <span class="prop">headlines</span> <span class="punc">=</span> <span class="kw">await</span> <span class="prop">run</span><span class="punc">.</span><span class="fn">trace</span><span class="punc">(</span><span class="str">"Fetch top headlines"</span><span class="punc">,</span> <span class="kw">async</span> <span class="punc">(</span><span class="prop">step</span><span class="punc">) =&gt; {</span>
+
+      <span class="cmt">// step.traceToolCall() — wraps a tool call</span>
+      <span class="kw">return</span> <span class="prop">step</span><span class="punc">.</span><span class="fn">traceToolCall</span><span class="punc">(</span>
+        <span class="str">"rss_fetch"</span><span class="punc">,</span>
+        <span class="punc">{</span> <span class="prop">url</span><span class="punc">:</span> <span class="str">"https://techcrunch.com/feed"</span><span class="punc">,</span> <span class="prop">limit</span><span class="punc">:</span> <span class="num">20</span> <span class="punc">},</span>
+        <span class="kw">async</span> <span class="punc">(</span><span class="prop">_tc</span><span class="punc">) => {</span>
+          <span class="kw">return</span> <span class="fn">fetchRss</span><span class="punc">(</span><span class="str">"https://techcrunch.com/feed"</span><span class="punc">);</span>
+        <span class="punc">}</span>
+      <span class="punc">);</span>
+    <span class="punc">});</span>
+
+    <span class="kw">return</span> <span class="punc">{</span> <span class="prop">headlines</span> <span class="punc">};</span>
+  <span class="punc">}</span>
+<span class="punc">);</span></pre>
+      </div>
+
+      <h4>When to use which</h4>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>API</th><th>Best for</th></tr></thead>
+          <tbody>
+            <tr><td>Explicit</td><td>Loops, conditional branching, retry logic, or when you need the run/step handle to pass to other functions.</td></tr>
+            <tr><td>Wrapper (<code>trace</code>)</td><td>Simple linear flows where you just want automatic start/end and error capture with minimal code.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Real-world multi-step agent example</h3>
+      <div class="code-block">
+        <div class="lang-label">typescript</div>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        <pre><span class="kw">import</span> <span class="cls">OpenAI</span> <span class="kw">from</span> <span class="str">"openai"</span><span class="punc">;</span>
+<span class="kw">import</span> <span class="punc">{</span> <span class="prop">sentro</span> <span class="punc">}</span> <span class="kw">from</span> <span class="str">"./lib/sentro"</span><span class="punc">;</span>
+
+<span class="kw">const</span> <span class="prop">openai</span> <span class="punc">=</span> <span class="kw">new</span> <span class="cls">OpenAI</span><span class="punc">();</span>
+
+<span class="cmt">/**
+ * An agent that answers a question by searching the web,
+ * reading each page, and synthesising a final answer.
+ */</span>
+<span class="kw">export async function</span> <span class="fn">answerAgent</span><span class="punc">(</span><span class="prop">question</span><span class="punc">:</span> <span class="kw">string</span><span class="punc">):</span> <span class="cls">Promise</span><span class="punc">&lt;</span><span class="kw">string</span><span class="punc">&gt; {</span>
+  <span class="kw">return</span> <span class="prop">sentro</span><span class="punc">.</span><span class="fn">trace</span><span class="punc">(</span>
+    <span class="str">"answer-agent"</span><span class="punc">,</span>
+    <span class="punc">{</span> <span class="prop">goal</span><span class="punc">:</span> <span class="prop">question</span><span class="punc">,</span> <span class="prop">model</span><span class="punc">:</span> <span class="str">"gpt-4o-mini"</span><span class="punc">,</span> <span class="prop">trigger</span><span class="punc">:</span> <span class="str">"api"</span> <span class="punc">},</span>
+    <span class="kw">async</span> <span class="punc">(</span><span class="prop">run</span><span class="punc">) =&gt; {</span>
+
+      <span class="cmt">// Step 1: Decide what to search for</span>
+      <span class="kw">const</span> <span class="prop">searchQuery</span> <span class="punc">=</span> <span class="kw">await</span> <span class="prop">run</span><span class="punc">.</span><span class="fn">trace</span><span class="punc">(</span><span class="str">"Plan search queries"</span><span class="punc">,</span> <span class="kw">async</span> <span class="punc">(</span><span class="prop">step</span><span class="punc">) =&gt; {</span>
+        <span class="kw">const</span> <span class="prop">llm</span> <span class="punc">=</span> <span class="prop">step</span><span class="punc">.</span><span class="fn">llmCall</span><span class="punc">({</span> <span class="prop">model</span><span class="punc">:</span> <span class="str">"gpt-4o-mini"</span><span class="punc">,</span> <span class="prop">provider</span><span class="punc">:</span> <span class="str">"openai"</span> <span class="punc">});</span>
+        <span class="kw">const</span> <span class="prop">res</span> <span class="punc">=</span> <span class="kw">await</span> <span class="prop">openai</span><span class="punc">.</span><span class="prop">chat</span><span class="punc">.</span><span class="prop">completions</span><span class="punc">.</span><span class="fn">create</span><span class="punc">({</span>
+          <span class="prop">model</span><span class="punc">:</span> <span class="str">"gpt-4o-mini"</span><span class="punc">,</span>
+          <span class="prop">messages</span><span class="punc">:</span> <span class="punc">[{</span> <span class="prop">role</span><span class="punc">:</span> <span class="str">"user"</span><span class="punc">,</span> <span class="prop">content</span><span class="punc">:</span> <span class="str">`Turn into a web search query: </span><span class="grn">${question}</span><span class="str">`</span> <span class="punc">}],</span>
+        <span class="punc">});</span>
+        <span class="kw">await</span> <span class="prop">llm</span><span class="punc">.</span><span class="fn">end</span><span class="punc">({</span>
+          <span class="prop">promptTokens</span><span class="punc">:</span>     <span class="prop">res</span><span class="punc">.</span><span class="prop">usage</span><span class="punc">?.</span><span class="prop">prompt_tokens</span><span class="punc">,</span>
+          <span class="prop">completionTokens</span><span class="punc">:</span> <span class="prop">res</span><span class="punc">.</span><span class="prop">usage</span><span class="punc">?.</span><span class="prop">completion_tokens</span><span class="punc">,</span>
+        <span class="punc">});</span>
+        <span class="kw">return</span> <span class="prop">res</span><span class="punc">.</span><span class="prop">choices</span><span class="punc">[</span><span class="num">0</span><span class="punc">].</span><span class="prop">message</span><span class="punc">.</span><span class="prop">content</span> <span class="punc">??</span> <span class="prop">question</span><span class="punc">;</span>
+      <span class="punc">});</span>
+
+      <span class="cmt">// Step 2: Search + read pages</span>
+      <span class="kw">const</span> <span class="prop">pages</span> <span class="punc">=</span> <span class="kw">await</span> <span class="prop">run</span><span class="punc">.</span><span class="fn">trace</span><span class="punc">(</span><span class="str">"Search and read sources"</span><span class="punc">,</span> <span class="kw">async</span> <span class="punc">(</span><span class="prop">step</span><span class="punc">) =&gt; {</span>
+        <span class="kw">const</span> <span class="prop">hits</span> <span class="punc">=</span> <span class="kw">await</span> <span class="prop">step</span><span class="punc">.</span><span class="fn">traceToolCall</span><span class="punc">(</span>
+          <span class="str">"web_search"</span><span class="punc">,</span> <span class="punc">{</span> <span class="prop">q</span><span class="punc">:</span> <span class="prop">searchQuery</span> <span class="punc">},</span>
+          <span class="kw">async</span> <span class="punc">() =&gt;</span> <span class="fn">webSearch</span><span class="punc">(</span><span class="prop">searchQuery</span><span class="punc">)</span>
+        <span class="punc">);</span>
+        <span class="kw">return</span> <span class="cls">Promise</span><span class="punc">.</span><span class="fn">all</span><span class="punc">(</span>
+          <span class="prop">hits</span><span class="punc">.</span><span class="prop">slice</span><span class="punc">(</span><span class="num">0</span><span class="punc">,</span> <span class="num">3</span><span class="punc">).</span><span class="fn">map</span><span class="punc">((</span><span class="prop">url</span><span class="punc">) =&gt;</span>
+            <span class="prop">step</span><span class="punc">.</span><span class="fn">traceToolCall</span><span class="punc">(</span><span class="str">"read_page"</span><span class="punc">,</span> <span class="punc">{</span> <span class="prop">url</span> <span class="punc">},</span> <span class="kw">async</span> <span class="punc">() =&gt;</span> <span class="fn">readPage</span><span class="punc">(</span><span class="prop">url</span><span class="punc">))</span>
+          <span class="punc">)</span>
+        <span class="punc">);</span>
+      <span class="punc">});</span>
+
+      <span class="cmt">// Step 3: Synthesise final answer</span>
+      <span class="kw">return</span> <span class="prop">run</span><span class="punc">.</span><span class="fn">trace</span><span class="punc">(</span><span class="str">"Synthesise answer"</span><span class="punc">,</span> <span class="kw">async</span> <span class="punc">(</span><span class="prop">step</span><span class="punc">) =&gt; {</span>
+        <span class="kw">const</span> <span class="prop">llm</span> <span class="punc">=</span> <span class="prop">step</span><span class="punc">.</span><span class="fn">llmCall</span><span class="punc">({</span> <span class="prop">model</span><span class="punc">:</span> <span class="str">"gpt-4o"</span><span class="punc">,</span> <span class="prop">provider</span><span class="punc">:</span> <span class="str">"openai"</span> <span class="punc">});</span>
+        <span class="kw">const</span> <span class="prop">final</span> <span class="punc">=</span> <span class="kw">await</span> <span class="prop">openai</span><span class="punc">.</span><span class="prop">chat</span><span class="punc">.</span><span class="prop">completions</span><span class="punc">.</span><span class="fn">create</span><span class="punc">({</span>
+          <span class="prop">model</span><span class="punc">:</span> <span class="str">"gpt-4o"</span><span class="punc">,</span>
+          <span class="prop">messages</span><span class="punc">:</span> <span class="punc">[{</span>
+            <span class="prop">role</span><span class="punc">:</span> <span class="str">"user"</span><span class="punc">,</span>
+            <span class="prop">content</span><span class="punc">:</span> <span class="str">`Answer </span><span class="grn">${question}</span><span class="str"> using: </span><span class="grn">${pages.join("\n\n")}</span><span class="str">`</span><span class="punc">,</span>
+          <span class="punc">}],</span>
+        <span class="punc">});</span>
+        <span class="kw">await</span> <span class="prop">llm</span><span class="punc">.</span><span class="fn">end</span><span class="punc">({</span>
+          <span class="prop">promptTokens</span><span class="punc">:</span>     <span class="prop">final</span><span class="punc">.</span><span class="prop">usage</span><span class="punc">?.</span><span class="prop">prompt_tokens</span><span class="punc">,</span>
+          <span class="prop">completionTokens</span><span class="punc">:</span> <span class="prop">final</span><span class="punc">.</span><span class="prop">usage</span><span class="punc">?.</span><span class="prop">completion_tokens</span><span class="punc">,</span>
+          <span class="prop">cost</span><span class="punc">:</span> <span class="num">0.021</span><span class="punc">,</span>
+        <span class="punc">});</span>
+        <span class="kw">return</span> <span class="prop">final</span><span class="punc">.</span><span class="prop">choices</span><span class="punc">[</span><span class="num">0</span><span class="punc">].</span><span class="prop">message</span><span class="punc">.</span><span class="prop">content</span> <span class="punc">??</span> <span class="str">""</span><span class="punc">;</span>
+      <span class="punc">});</span>
+    <span class="punc">}</span>
+  <span class="punc">);</span>
+<span class="punc">}</span></pre>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════ -->
+    <!-- DASHBOARD                                              -->
+    <!-- ══════════════════════════════════════════════════════ -->
+    <section class="section" id="dashboard">
+      <div class="section-header">
+        <div class="section-num">5</div>
+        <h2>Dashboard Guide</h2>
+      </div>
+
+      <h3>Issues page</h3>
+      <p>The Issues page lists all error <em>groups</em> for a project. Sentro fingerprints each incoming event by hashing the error type and stack frame — identical errors are merged into one issue rather than creating thousands of individual records.</p>
+      <ul>
+        <li><strong>Status tabs</strong> — Open, Resolved, Ignored. Resolving an issue keeps it in the list; if the same fingerprint fires again it automatically re-opens.</li>
+        <li><strong>Affected runs badge</strong> — shows how many distinct agent runs this issue appeared in. Useful for assessing blast radius on agentic systems.</li>
+        <li><strong>Event count</strong> — total occurrences since first seen.</li>
+        <li><strong>Last seen</strong> — issues are sorted by recency by default so your noisiest current problem is always first.</li>
+      </ul>
+
+      <h3>Agent Runs page <span class="badge badge-purple">AI</span></h3>
+      <p>A filterable list of every agent run sent to this project.</p>
+      <ul>
+        <li><strong>Stats bar</strong> — at the top, summarises the filtered window: total runs, success rate %, average duration, total tokens, and total cost.</li>
+        <li><strong>Filter by agent</strong> — if you run multiple agents in one project, the dropdown lets you isolate one.</li>
+        <li><strong>Filter by status</strong> — running / success / failure / timeout.</li>
+        <li><strong>Step count</strong> — how many reasoning steps this run went through before finishing.</li>
+        <li><strong>Cost / Tokens</strong> — per-run totals aggregated from all LLM calls within.</li>
+      </ul>
+
+      <h3>Run Detail &amp; Step Replay <span class="badge badge-purple">AI</span></h3>
+      <p>Click any run to open its timeline. Each step is shown in sequence order with its content, start/end time, and duration. Expand any step to see:</p>
+      <ul>
+        <li><strong>Tool calls</strong> — tool name, input parameters, output, status (success / error), and latency in ms.</li>
+        <li><strong>LLM calls</strong> — model, provider, token counts (prompt + completion), cost, and latency.</li>
+        <li><strong>Recent errors</strong> — up to 10 events that were captured during this run, linked to their issue.</li>
+      </ul>
+      <p>The timeline is read left-to-right, top-to-bottom in chronological order. You can replay the exact sequence of decisions and actions the agent took.</p>
+
+      <h3>Performance page <span class="badge badge-amber">Cost</span></h3>
+      <p>Aggregate performance metrics for the selected time window (default: last 24 hours).</p>
+      <ul>
+        <li><strong>LLM cost by model</strong> — a table showing each model, call count, total tokens, total cost, and average latency. Use this to spot expensive models or prompts.</li>
+        <li><strong>Slowest tool calls</strong> — top 20 tool calls by latency in the window. Links to the parent run for context.</li>
+        <li><strong>Slowest LLM calls</strong> — same for inference calls. Useful for identifying unusually long completions.</li>
+      </ul>
+
+      <h3>Alerts page</h3>
+      <p>Configure webhook alerts that fire when thresholds are breached. Alerts are evaluated every 60 seconds by the background worker.</p>
+      <ul>
+        <li><strong>error_spike</strong> — fires when the number of new errors in the last N minutes exceeds a threshold. Config keys: <code>windowMinutes</code>, <code>threshold</code>.</li>
+        <li><strong>failure_rate</strong> — fires when the fraction of failed agent runs exceeds a percentage. Config keys: <code>windowMinutes</code>, <code>thresholdPct</code>.</li>
+        <li><strong>cost_threshold</strong> — fires when total LLM spend in the window exceeds a dollar amount. Config keys: <code>windowMinutes</code>, <code>thresholdUsd</code>.</li>
+      </ul>
+      <p>Webhooks receive a JSON <code>POST</code> with fields: <code>ruleId</code>, <code>ruleName</code>, <code>type</code>, <code>projectId</code>, <code>triggeredAt</code>, and <code>payload</code> (metric details).</p>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════ -->
+    <!-- API REFERENCE                                          -->
+    <!-- ══════════════════════════════════════════════════════ -->
+    <section class="section" id="api">
+      <div class="section-header">
+        <div class="section-num">6</div>
+        <h2>API Reference</h2>
+      </div>
+
+      <h3>Authentication</h3>
+      <p>Sentro has two authentication surfaces:</p>
+      <ul>
+        <li><strong>Ingest API</strong> (<code>POST /api/ingest</code>) — authenticated by DSN. The SDK sends the token as a <code>Authorization: Bearer &lt;token&gt;</code> header. You can also embed it in the payload's <code>dsn</code> field.</li>
+        <li><strong>Dashboard API</strong> (all other routes) — authenticated by session cookie. Log in via the UI or POST to <code>/api/auth/login</code> to obtain a session cookie.</li>
+      </ul>
+
+      <!-- Ingest -->
+      <h3>Ingest endpoint</h3>
+      <div class="endpoint">
+        <span class="method method-post">POST</span>
+        <span class="endpoint-path">/api/ingest</span>
+      </div>
+      <p>Accepts a batch of typed events from the SDK. The SDK handles this automatically — you only need this reference for custom integrations.</p>
+      <div class="code-block">
+        <div class="lang-label">json</div>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        <pre><span class="punc">{</span>
+  <span class="prop">"dsn"</span><span class="punc">:</span>   <span class="str">"&lt;projectId-or-dsnToken&gt;"</span><span class="punc">,</span>
+  <span class="prop">"batch"</span><span class="punc">:</span> <span class="punc">[</span>
+    <span class="punc">{</span>
+      <span class="prop">"type"</span><span class="punc">:</span>       <span class="str">"event"</span><span class="punc">,</span>        <span class="cmt">// event | run.start | run.end | step.start</span>
+      <span class="prop">"timestamp"</span><span class="punc">:</span>  <span class="str">"2025-04-12T10:00:00.000Z"</span><span class="punc">,</span>
+      <span class="prop">"level"</span><span class="punc">:</span>      <span class="str">"error"</span><span class="punc">,</span>
+      <span class="prop">"message"</span><span class="punc">:</span>    <span class="str">"Cannot read properties of undefined"</span><span class="punc">,</span>
+      <span class="prop">"stackTrace"</span><span class="punc">:</span> <span class="str">"Error: Cannot read...\n  at ..."</span><span class="punc">,</span>
+      <span class="prop">"tags"</span><span class="punc">:</span>       <span class="punc">{</span> <span class="prop">"env"</span><span class="punc">:</span> <span class="str">"production"</span> <span class="punc">},</span>
+      <span class="prop">"context"</span><span class="punc">:</span>    <span class="punc">{}</span>
+    <span class="punc">}</span>
+  <span class="punc">]</span>
+<span class="punc">}</span></pre>
+      </div>
+
+      <p><strong>Event types:</strong></p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>type</th><th>Required fields</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td>event</td><td>level, message</td><td>Plain error or message event.</td></tr>
+            <tr><td>run.start</td><td>runId, agent</td><td>Begins an agent run.</td></tr>
+            <tr><td>run.end</td><td>runId, status</td><td>Ends a run. status: success | failure | timeout.</td></tr>
+            <tr><td>step.start</td><td>runId, stepId, seq, content</td><td>Begins a step in a run.</td></tr>
+            <tr><td>step.end</td><td>runId, stepId, seq</td><td>Ends a step.</td></tr>
+            <tr><td>tool_call.start</td><td>runId, stepId, toolCallId, toolName</td><td>Begins a tool call.</td></tr>
+            <tr><td>tool_call.end</td><td>runId, stepId, toolCallId, toolName</td><td>Ends a tool call with optional result/error.</td></tr>
+            <tr><td>llm_call.start</td><td>runId, stepId, llmCallId, model</td><td>Begins an LLM inference call.</td></tr>
+            <tr><td>llm_call.end</td><td>runId, stepId, llmCallId</td><td>Ends LLM call with token counts and cost.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p><strong>Response:</strong> <code>202 Accepted</code> — <code>{ "accepted": 3 }</code><br>
+      <strong>Rate limit:</strong> configurable per-project (default 1000 events/min). Returns <code>429</code> when exceeded.</p>
+
+      <!-- Projects -->
+      <h3>Projects</h3>
+      <div class="endpoint">
+        <span class="method method-get">GET</span>
+        <span class="endpoint-path">/api/projects</span>
+      </div>
+      <p>Returns all projects for the authenticated user.</p>
+      <p>Response: <code>{ projects: Project[] }</code></p>
+
+      <div class="endpoint">
+        <span class="method method-post">POST</span>
+        <span class="endpoint-path">/api/projects</span>
+      </div>
+      <p>Create a new project.</p>
+      <div class="code-block">
+        <div class="lang-label">json</div>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        <pre><span class="cmt">// Request body</span>
+<span class="punc">{</span> <span class="prop">"name"</span><span class="punc">:</span> <span class="str">"my-agent"</span> <span class="punc">}</span>
+
+<span class="cmt">// Response 201</span>
+<span class="punc">{</span>
+  <span class="prop">"project"</span><span class="punc">:</span> <span class="punc">{</span> <span class="prop">"id"</span><span class="punc">:</span> <span class="str">"proj_..."</span><span class="punc">,</span> <span class="prop">"name"</span><span class="punc">:</span> <span class="str">"my-agent"</span><span class="punc">,</span> <span class="prop">"dsnToken"</span><span class="punc">:</span> <span class="str">"abc123"</span><span class="punc">,</span> <span class="prop">"..."</span> <span class="punc">},</span>
+  <span class="prop">"dsnUrl"</span><span class="punc">:</span>   <span class="str">"http://abc123@localhost:3000/api/ingest/proj_..."</span>
+<span class="punc">}</span></pre>
+      </div>
+
+      <!-- Issues -->
+      <h3>Issues</h3>
+      <div class="endpoint">
+        <span class="method method-get">GET</span>
+        <span class="endpoint-path">/api/projects/:projectId/issues</span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Query param</th><th>Default</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td>status</td><td>open</td><td>open | resolved | ignored</td></tr>
+            <tr><td>limit</td><td>50</td><td>Max results (capped at 200)</td></tr>
+            <tr><td>cursor</td><td>—</td><td>Pagination cursor (last issue ID from previous page)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Response: <code>{ groups: EventGroup[], nextCursor?: string }</code>. Each group includes <code>affectedRunCount</code>.</p>
+
+      <!-- Runs -->
+      <h3>Agent Runs</h3>
+      <div class="endpoint">
+        <span class="method method-get">GET</span>
+        <span class="endpoint-path">/api/projects/:projectId/runs</span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Query param</th><th>Default</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td>agent</td><td>—</td><td>Filter by agent name</td></tr>
+            <tr><td>status</td><td>—</td><td>running | success | failure | timeout</td></tr>
+            <tr><td>hours</td><td>24</td><td>Lookback window in hours</td></tr>
+            <tr><td>limit</td><td>50</td><td>Max runs returned (capped at 200)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Response: <code>{ runs: AgentRun[], stats: { totalRuns, successRate, avgDurationMs, totalTokens, totalCost } }</code></p>
+
+      <div class="endpoint">
+        <span class="method method-get">GET</span>
+        <span class="endpoint-path">/api/projects/:projectId/runs/:runId</span>
+      </div>
+      <p>Full run detail including all steps, tool calls, LLM calls, and associated events (last 10). Used by the Step Replay view.</p>
+
+      <!-- Performance -->
+      <h3>Performance</h3>
+      <div class="endpoint">
+        <span class="method method-get">GET</span>
+        <span class="endpoint-path">/api/projects/:projectId/performance</span>
+      </div>
+      <p>Query param: <code>hours</code> (default 24).</p>
+      <p>Response: <code>{ slowestToolCalls: ToolCall[], slowestLlmCalls: LlmCall[], llmByModel: ModelAgg[] }</code> where <code>ModelAgg</code> contains <code>model</code>, <code>_count.id</code>, <code>_sum.totalTokens</code>, <code>_sum.cost</code>, <code>_avg.latencyMs</code>.</p>
+
+      <!-- Alerts -->
+      <h3>Alert Rules</h3>
+      <div class="endpoint">
+        <span class="method method-get">GET</span>
+        <span class="endpoint-path">/api/projects/:projectId/alerts</span>
+      </div>
+      <p>Returns all alert rules with their trigger history count.</p>
+
+      <div class="endpoint">
+        <span class="method method-post">POST</span>
+        <span class="endpoint-path">/api/projects/:projectId/alerts</span>
+      </div>
+      <div class="code-block">
+        <div class="lang-label">json</div>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        <pre><span class="punc">{</span>
+  <span class="prop">"name"</span><span class="punc">:</span>       <span class="str">"High failure rate"</span><span class="punc">,</span>
+  <span class="prop">"type"</span><span class="punc">:</span>       <span class="str">"failure_rate"</span><span class="punc">,</span>         <span class="cmt">// error_spike | failure_rate | cost_threshold</span>
+  <span class="prop">"config"</span><span class="punc">:</span>     <span class="punc">{</span> <span class="prop">"windowMinutes"</span><span class="punc">:</span> <span class="num">10</span><span class="punc">,</span> <span class="prop">"thresholdPct"</span><span class="punc">:</span> <span class="num">20</span> <span class="punc">},</span>
+  <span class="prop">"webhookUrl"</span><span class="punc">:</span> <span class="str">"https://hooks.slack.com/services/T.../..."</span>
+<span class="punc">}</span></pre>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════ -->
+    <!-- CONFIGURATION                                          -->
+    <!-- ══════════════════════════════════════════════════════ -->
+    <section class="section" id="config">
+      <div class="section-header">
+        <div class="section-num">7</div>
+        <h2>Configuration</h2>
+      </div>
+
+      <h3>Environment variables</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Variable</th><th>Required</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td>DATABASE_URL</td><td>Yes</td><td>PostgreSQL connection string. Example: <code>postgresql://sentro:sentro@db:5432/sentro</code></td></tr>
+            <tr><td>SESSION_SECRET</td><td>Yes</td><td>Secret key for signing session tokens. Use a random 32-byte hex string in production.</td></tr>
+            <tr><td>NEXT_PUBLIC_APP_URL</td><td>Yes</td><td>Publicly reachable base URL of the Sentro instance. Used to construct DSN URLs. Example: <code>https://sentro.example.com</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout callout-danger">
+        <strong>Security</strong>
+        Never commit a <code>.env</code> file with real credentials. Use Docker secrets or your hosting platform's secret manager in production. The default <code>SESSION_SECRET</code> of <code>change-me-in-production</code> must be changed before any public exposure.
+      </div>
+
+      <h3>Per-project settings</h3>
+      <p>Each project has two configurable properties (editable via the Settings tab or directly in Postgres):</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Field</th><th>Default</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td>retentionDays</td><td>30</td><td>Events and runs older than this are purged by the nightly cleanup job.</td></tr>
+            <tr><td>rateLimitPerMinute</td><td>1000</td><td>Maximum ingest events accepted per minute per DSN. Requests over the limit receive a 429 response.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════ -->
+    <!-- SELF-HOSTING                                           -->
+    <!-- ══════════════════════════════════════════════════════ -->
+    <section class="section" id="selfhost">
+      <div class="section-header">
+        <div class="section-num">8</div>
+        <h2>Self-Hosting Guide</h2>
+      </div>
+
+      <h3>Docker Compose (recommended)</h3>
+      <p>The included <code>docker-compose.yml</code> starts everything you need:</p>
+      <div class="code-block">
+        <div class="lang-label">yaml</div>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        <pre><span class="kw">version</span><span class="punc">:</span> <span class="str">"3.8"</span>
+<span class="kw">services</span><span class="punc">:</span>
+  <span class="prop">app</span><span class="punc">:</span>
+    <span class="kw">build</span><span class="punc">:</span> <span class="punc">.</span>
+    <span class="kw">ports</span><span class="punc">:</span>
+      <span class="punc">-</span> <span class="str">"3000:3000"</span>
+    <span class="kw">environment</span><span class="punc">:</span>
+      <span class="prop">DATABASE_URL</span><span class="punc">:</span> <span class="str">"postgresql://sentro:sentro@db:5432/sentro?schema=public"</span>
+      <span class="prop">SESSION_SECRET</span><span class="punc">:</span> <span class="str">"${SESSION_SECRET:-change-me-in-production}"</span>
+      <span class="prop">NEXT_PUBLIC_APP_URL</span><span class="punc">:</span> <span class="str">"http://localhost:3000"</span>
+    <span class="kw">depends_on</span><span class="punc">:</span>
+      <span class="prop">db</span><span class="punc">:</span>
+        <span class="kw">condition</span><span class="punc">:</span> <span class="prop">service_healthy</span>
+    <span class="kw">restart</span><span class="punc">:</span> <span class="prop">unless-stopped</span>
+
+  <span class="prop">db</span><span class="punc">:</span>
+    <span class="kw">image</span><span class="punc">:</span> <span class="str">postgres:16-alpine</span>
+    <span class="kw">environment</span><span class="punc">:</span>
+      <span class="prop">POSTGRES_USER</span><span class="punc">:</span>     <span class="str">sentro</span>
+      <span class="prop">POSTGRES_PASSWORD</span><span class="punc">:</span> <span class="str">sentro</span>
+      <span class="prop">POSTGRES_DB</span><span class="punc">:</span>       <span class="str">sentro</span>
+    <span class="kw">volumes</span><span class="punc">:</span>
+      <span class="punc">-</span> <span class="str">sentro-data:/var/lib/postgresql/data</span>
+    <span class="kw">healthcheck</span><span class="punc">:</span>
+      <span class="kw">test</span><span class="punc">:</span>     <span class="punc">[</span><span class="str">"CMD-SHELL"</span><span class="punc">,</span> <span class="str">"pg_isready -U sentro"</span><span class="punc">]</span>
+      <span class="kw">interval</span><span class="punc">:</span> <span class="num">5</span><span class="prop">s</span>
+      <span class="kw">timeout</span><span class="punc">:</span>  <span class="num">5</span><span class="prop">s</span>
+      <span class="kw">retries</span><span class="punc">:</span>  <span class="num">5</span>
+    <span class="kw">restart</span><span class="punc">:</span> <span class="prop">unless-stopped</span>
+
+<span class="kw">volumes</span><span class="punc">:</span>
+  <span class="prop">sentro-data</span><span class="punc">:</span></pre>
+      </div>
+
+      <h3>Data persistence</h3>
+      <p>All data is stored in the <code>sentro-data</code> named Docker volume mapped to <code>/var/lib/postgresql/data</code>. The volume persists across <code>docker compose down</code> restarts. To fully wipe it run:</p>
+      <div class="code-block">
+        <div class="lang-label">bash</div>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        <pre><span class="fn">docker</span> compose down -v   <span class="cmt"># removes volumes — ALL data is lost</span></pre>
+      </div>
+
+      <h3>Backup strategy</h3>
+      <div class="code-block">
+        <div class="lang-label">bash</div>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        <pre><span class="cmt"># Dump to a compressed file</span>
+<span class="fn">docker</span> exec sentro-db-1 pg_dump -U sentro sentro \
+  | gzip &gt; sentro-backup-<span class="grn">$(date +%Y%m%d)</span>.sql.gz
+
+<span class="cmt"># Restore</span>
+<span class="fn">gunzip</span> -c sentro-backup-20250412.sql.gz \
+  | docker exec -i sentro-db-1 psql -U sentro sentro</pre>
+      </div>
+
+      <h3>Scaling path</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Stage</th><th>Architecture</th><th>When to upgrade</th></tr></thead>
+          <tbody>
+            <tr><td>v1 — Single instance</td><td>One Docker Compose stack. App + Postgres on one host. pg-boss handles background jobs in the same process.</td><td>Up to ~500 events/sec sustained.</td></tr>
+            <tr><td>v1.5 — Redis</td><td>Add Redis for session caching and a separate job queue so multiple app replicas don't double-process events.</td><td>When you want horizontal app scaling or are experiencing lock contention on pg-boss.</td></tr>
+            <tr><td>v2 — Split ingestion</td><td>Separate lightweight ingest service (Node/Go) that writes to Postgres. Dashboard reads from a read replica. ClickHouse for analytics.</td><td>&gt;5000 events/sec or when analytics queries slow down the dashboard.</td></tr>
+            <tr><td>v3 — SaaS</td><td>Multi-tenant with org-level isolation, billing, usage metering, and managed Postgres per tenant.</td><td>Commercial offering.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout callout-info">
+        <strong>Reverse proxy</strong>
+        For production, place Sentro behind nginx or Caddy for TLS termination. Set <code>NEXT_PUBLIC_APP_URL</code> to the public HTTPS URL so generated DSNs use HTTPS.
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════ -->
+    <!-- ARCHITECTURE                                           -->
+    <!-- ══════════════════════════════════════════════════════ -->
+    <section class="section" id="architecture">
+      <div class="section-header">
+        <div class="section-num">9</div>
+        <h2>Architecture</h2>
+      </div>
+
+      <h3>Data flow</h3>
+      <div class="arch-diagram">
+        <div class="arch-row" style="gap:0;align-items:center;flex-wrap:wrap;justify-content:center;">
+          <div class="arch-box arch-green" style="min-width:100px">SDK<br><small style="font-weight:400;font-size:.7rem">@sentro/sdk</small></div>
+          <div class="arch-arrow">→</div>
+          <div class="arch-box arch-blue" style="min-width:100px">POST /api/ingest<br><small style="font-weight:400;font-size:.7rem">auth + rate limit</small></div>
+          <div class="arch-arrow">→</div>
+          <div class="arch-box arch-purple" style="min-width:100px">In-Memory Buffer<br><small style="font-weight:400;font-size:.7rem">lib/ingestion/buffer.ts</small></div>
+          <div class="arch-arrow">→</div>
+          <div class="arch-box arch-amber" style="min-width:100px">Processor<br><small style="font-weight:400;font-size:.7rem">lib/ingestion/processor.ts</small></div>
+          <div class="arch-arrow">→</div>
+          <div class="arch-box arch-green" style="min-width:100px">PostgreSQL<br><small style="font-weight:400;font-size:.7rem">Prisma ORM</small></div>
+        </div>
+        <div style="text-align:center;margin-top:16px;color:var(--text-sec);font-size:.78rem">↑ Dashboard reads directly from Postgres via Next.js API routes</div>
+      </div>
+
+      <p>The ingest endpoint is intentionally synchronous for simplicity — the buffer flush happens in a <code>setInterval</code> within the Next.js process using <code>pg-boss</code>'s job queue, which keeps transaction ordering consistent without an external broker.</p>
+
+      <h3>Background jobs</h3>
+      <p>Two recurring jobs run inside the application process via <code>pg-boss</code> (a Postgres-backed job queue):</p>
+      <ul>
+        <li><strong>alert-check</strong> — runs every minute (<code>* * * * *</code>). Evaluates all enabled alert rules, computes current metric values, and fires webhooks for rules that breach their threshold.</li>
+        <li><strong>cleanup</strong> — runs daily at 3:00 AM (<code>0 3 * * *</code>). Deletes events, runs, steps, tool calls, and LLM calls that are older than each project's <code>retentionDays</code> setting.</li>
+      </ul>
+
+      <h3>Database schema overview</h3>
+      <p>The schema has four main entity clusters:</p>
+
+      <div class="schema-section">
+        <div class="schema-title">Auth</div>
+        <p style="margin-top:8px"><code>User</code> ↔ <code>Session</code> — standard credential + session token table. Sessions expire and are validated on every dashboard API call.</p>
+      </div>
+
+      <div class="schema-section">
+        <div class="schema-title">Projects &amp; Error Tracking</div>
+        <p style="margin-top:8px"><code>Project</code> → <code>EventGroup</code> → <code>Event</code>. Each inbound <code>event</code> type is fingerprinted and upserted into its parent <code>EventGroup</code>. Groups have a <code>status</code> (open/resolved/ignored) and counters updated atomically on each event.</p>
+      </div>
+
+      <div class="schema-section">
+        <div class="schema-title">Agent Observability</div>
+        <p style="margin-top:8px"><code>AgentRun</code> → <code>Step</code> → <code>ToolCall</code> / <code>LlmCall</code>. Runs accumulate <code>totalTokens</code> and <code>totalCost</code> as LLM calls finish. Steps carry a <code>sequenceNumber</code> for ordered replay. Tool calls and LLM calls store both <code>startedAt</code> and latency for performance queries.</p>
+      </div>
+
+      <div class="schema-section">
+        <div class="schema-title">Alerting</div>
+        <p style="margin-top:8px"><code>AlertRule</code> → <code>AlertHistory</code>. Each rule stores its <code>config</code> as JSON so new rule types can be added without schema changes. History records the webhook HTTP status for debugging delivery failures.</p>
+      </div>
+
+      <h3>Key indexes</h3>
+      <p>Performance-sensitive indexes beyond primary keys:</p>
+      <ul>
+        <li><code>EventGroup(projectId, status, lastSeen DESC)</code> — powers the issues list.</li>
+        <li><code>AgentRun(projectId, startedAt DESC)</code> and <code>(projectId, agentName, startedAt DESC)</code> — powers the runs list and per-agent filter.</li>
+        <li><code>ToolCall(projectId, latencyMs DESC)</code> and <code>LlmCall(projectId, latencyMs DESC)</code> — powers the performance page.</li>
+        <li><code>LlmCall(projectId, model, startedAt DESC)</code> — powers cost-by-model aggregation.</li>
+      </ul>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════ -->
+    <!-- ROADMAP                                                -->
+    <!-- ══════════════════════════════════════════════════════ -->
+    <section class="section" id="roadmap">
+      <div class="section-header">
+        <div class="section-num">10</div>
+        <h2>Roadmap</h2>
+      </div>
+
+      <p>Sentro is open-source and actively developed. Here's what's planned:</p>
+
+      <div class="roadmap-item">
+        <div class="roadmap-version">v1.1</div>
+        <div class="roadmap-content">
+          <h3>Framework integrations &amp; guardrails</h3>
+          <ul>
+            <li>Python SDK (<code>pip install sentro-sdk</code>)</li>
+            <li>LangChain callback handler — automatic tracing with zero manual instrumentation</li>
+            <li>CrewAI integration — trace crew tasks and agent interactions</li>
+            <li>Vercel AI SDK middleware — wrap <code>generateText</code> / <code>streamText</code> calls automatically</li>
+            <li>Drift &amp; guardrail alerts — fire when agent behaviour deviates from a baseline (token count, step count, tool call frequency)</li>
+            <li>Session replay UI — visualise full run timelines as an interactive Gantt-style chart</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="roadmap-item">
+        <div class="roadmap-version">v1.5</div>
+        <div class="roadmap-content">
+          <h3>Redis &amp; horizontal scaling</h3>
+          <ul>
+            <li>Optional Redis adapter for session store</li>
+            <li>Redis-backed job queue replacing pg-boss for better horizontal scaling</li>
+            <li>Multiple app replicas behind a load balancer</li>
+            <li>Configurable event buffer with at-least-once delivery guarantees</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="roadmap-item">
+        <div class="roadmap-version">v2</div>
+        <div class="roadmap-content">
+          <h3>Separate ingestion service &amp; ClickHouse</h3>
+          <ul>
+            <li>Dedicated lightweight ingest microservice (unbundled from the Next.js app)</li>
+            <li>ClickHouse for analytical queries — real-time aggregations over billions of events</li>
+            <li>Postgres read replica for dashboard queries</li>
+            <li>Kafka/Redpanda as the event bus between ingest and storage</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="roadmap-item">
+        <div class="roadmap-version">v3</div>
+        <div class="roadmap-content">
+          <h3>SaaS mode &amp; multi-tenancy</h3>
+          <ul>
+            <li>Organisation-level isolation with role-based access (admin / member / viewer)</li>
+            <li>Usage metering and billing integration</li>
+            <li>Managed Postgres per organisation option</li>
+            <li>SSO / SAML support</li>
+            <li>Audit log for compliance</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="callout callout-tip">
+        <strong>Contributing</strong>
+        PRs and issues are welcome on GitHub. Check the <code>CONTRIBUTING.md</code> for local development setup and the <code>good first issue</code> label for beginner-friendly tasks.
+      </div>
+    </section>
+
+  </div><!-- /content-wrap -->
+</main><!-- /main -->
+
+<script>
+  // ─── Sidebar toggle (mobile) ──────────────────────────────
+  function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('open');
+    document.getElementById('overlay').classList.toggle('open');
+  }
+  function closeSidebar() {
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('overlay').classList.remove('open');
+  }
+
+  // ─── Active nav link on scroll ────────────────────────────
+  const sections = document.querySelectorAll('section[id]');
+  const navLinks = document.querySelectorAll('#sidebar a[href^="#"]');
+
+  function setActive() {
+    let current = '';
+    sections.forEach(sec => {
+      const top = sec.getBoundingClientRect().top;
+      if (top <= 120) current = sec.id;
+    });
+    navLinks.forEach(link => {
+      link.classList.toggle('active', link.getAttribute('href') === '#' + current);
+    });
+  }
+
+  document.getElementById('main').addEventListener('scroll', setActive, { passive: true });
+  window.addEventListener('scroll', setActive, { passive: true });
+
+  // Also handle clicks — close sidebar on mobile
+  navLinks.forEach(link => {
+    link.addEventListener('click', () => {
+      if (window.innerWidth <= 768) closeSidebar();
+    });
+  });
+
+  // ─── Copy button ──────────────────────────────────────────
+  function copyCode(btn) {
+    const pre = btn.closest('.code-block').querySelector('pre');
+    const text = pre.innerText;
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = 'Copy';
+        btn.classList.remove('copied');
+      }, 1800);
+    }).catch(() => {
+      // fallback for older browsers
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1800);
+    });
+  }
+
+  // Initial active state
+  setActive();
+</script>
+</body>
+</html>
