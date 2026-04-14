@@ -39,6 +39,10 @@ model Project {
   dsnToken           String       @unique @map("dsn_token")
   retentionDays      Int          @default(30) @map("retention_days")
   rateLimitPerMinute Int          @default(1000) @map("rate_limit_per_minute")
+  driftLoopSteps     Int          @default(50) @map("drift_loop_steps")
+  driftLoopMinutes   Int          @default(10) @map("drift_loop_minutes")
+  driftTokenBurn     Int          @default(100000) @map("drift_token_burn")
+  driftRepeatThreshold Int        @default(5) @map("drift_repeat_threshold")
   createdAt          DateTime     @default(now()) @map("created_at")
   updatedAt          DateTime     @updatedAt @map("updated_at")
   eventGroups        EventGroup[]
@@ -261,6 +265,7 @@ enum WebhookEvent {
   run_failed
   run_completed
   cost_spike
+  drift_detected
 }
 
 model Webhook {

@@ -253,6 +253,69 @@ export async function processFlush(projectDsnToken: string, events: IngestEvent[
             });
           }
 
+          // Drift detection: looping agents / token burn / repeated tool calls
+          const LOOP_STEPS_THRESHOLD = project.driftLoopSteps;
+          const LOOP_MINUTES_THRESHOLD = project.driftLoopMinutes;
+          const TOKEN_BURN_THRESHOLD = project.driftTokenBurn;
+
+          if (stepCount > LOOP_STEPS_THRESHOLD) {
+            dispatchWebhooks(project.id, WebhookEvent.drift_detected, {
+              ...runPayload,
+              driftType: "loop_detected",
+              reason: `Run had ${stepCount} steps (threshold: ${LOOP_STEPS_THRESHOLD})`,
+              stepCount,
+            });
+          }
+
+          if (duration > LOOP_MINUTES_THRESHOLD * 60 * 1000) {
+            dispatchWebhooks(project.id, WebhookEvent.drift_detected, {
+              ...runPayload,
+              driftType: "duration_exceeded",
+              reason: `Run took ${Math.round(duration / 60000)} minutes (threshold: ${LOOP_MINUTES_THRESHOLD})`,
+              durationMs: duration,
+            });
+          }
+
+          if (totalTokens > TOKEN_BURN_THRESHOLD) {
+            dispatchWebhooks(project.id, WebhookEvent.drift_detected, {
+              ...runPayload,
+              driftType: "token_burn",
+              reason: `Run used ${totalTokens} tokens (threshold: ${TOKEN_BURN_THRESHOLD})`,
+              totalTokens,
+            });
+          }
+
+          // Detect repeated tool calls (same name + same input) within this run
+          try {
+            const toolCalls = await prisma.toolCall.findMany({
+              where: { runId },
+              select: { toolName: true, input: true },
+            });
+
+            const toolCallCounts = new Map<string, number>();
+            for (const tc of toolCalls) {
+              const key = `${tc.toolName}:${JSON.stringify(tc.input)}`;
+              toolCallCounts.set(key, (toolCallCounts.get(key) ?? 0) + 1);
+            }
+
+            const REPEAT_THRESHOLD = project.driftRepeatThreshold;
+            for (const [key, count] of toolCallCounts.entries()) {
+              if (count >= REPEAT_THRESHOLD) {
+                const [toolName] = key.split(":", 1);
+                dispatchWebhooks(project.id, WebhookEvent.drift_detected, {
+                  ...runPayload,
+                  driftType: "repeat_tool_call",
+                  reason: `Tool "${toolName}" called ${count} times with identical input`,
+                  toolName,
+                  repeatCount: count,
+                });
+                break; // Only fire once per run
+              }
+            }
+          } catch (err) {
+            console.warn(`Failed to check repeat tool calls for run ${runId}:`, err);
+          }
+
           break;
         }
 

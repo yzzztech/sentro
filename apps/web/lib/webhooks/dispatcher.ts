@@ -24,6 +24,16 @@ function matchesFilters(filters: Record<string, unknown>, payload: Record<string
     if (isNaN(threshold) || cost < threshold) return false;
   }
 
+  if (event === WebhookEvent.drift_detected && filters.driftType !== undefined) {
+    // Allow either a single string or an array of accepted drift types
+    const payloadDriftType = payload.driftType;
+    if (Array.isArray(filters.driftType)) {
+      if (!filters.driftType.includes(payloadDriftType as string)) return false;
+    } else if (typeof filters.driftType === "string") {
+      if (payloadDriftType !== filters.driftType) return false;
+    }
+  }
+
   return true;
 }
 
