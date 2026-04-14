@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db/prisma";
 import RunReplayTabs from "@/components/run-replay-tabs";
+import RunScoresPanel from "@/components/run-scores-panel";
 
 interface RunDetailPageProps {
   params: Promise<{ projectId: string; runId: string }>;
@@ -42,6 +43,30 @@ export default async function RunDetailPage({ params }: RunDetailPageProps) {
   if (!run) {
     notFound();
   }
+
+  const [runScores, knownNames] = await Promise.all([
+    prisma.score.findMany({
+      where: { runId },
+      orderBy: { createdAt: "desc" },
+      select: { id: true, name: true, value: true, source: true, comment: true, createdAt: true },
+    }),
+    prisma.score.findMany({
+      where: { projectId },
+      distinct: ["name"],
+      select: { name: true },
+      take: 30,
+    }),
+  ]);
+
+  const initialScores = runScores.map((s) => ({
+    id: s.id,
+    name: s.name,
+    value: s.value,
+    source: s.source,
+    comment: s.comment,
+    createdAt: s.createdAt.toISOString(),
+  }));
+  const knownScoreNames = knownNames.map((n) => n.name);
 
   const steps = run.steps.map((step) => ({
     id: step.id,
@@ -130,6 +155,13 @@ export default async function RunDetailPage({ params }: RunDetailPageProps) {
           <p className="text-sm text-red-300 font-mono break-words">{run.errorMessage}</p>
         </div>
       )}
+
+      <RunScoresPanel
+        projectId={projectId}
+        runId={run.id}
+        initialScores={initialScores}
+        knownScoreNames={knownScoreNames}
+      />
 
       {/* Step timeline */}
       <h2 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-4">
