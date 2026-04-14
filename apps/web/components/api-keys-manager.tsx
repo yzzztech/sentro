@@ -68,7 +68,10 @@ export default function ApiKeysManager({ initialKeys }: Props) {
 
   async function revoke(id: string) {
     if (!confirm("Revoke this key? It will stop working immediately.")) return;
-    const res = await fetch(`/api/api-keys/${id}`, { method: "DELETE" });
+    const res = await fetch(`/api/api-keys/${id}`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+    });
     if (!res.ok) {
       alert("Failed to revoke");
       return;
