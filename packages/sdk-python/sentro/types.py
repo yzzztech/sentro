@@ -52,6 +52,8 @@ class StartRunOptions:
     goal: str | None = None
     model: str | None = None
     trigger: str | None = None
+    session_id: str | None = None
+    user_id: str | None = None
     metadata: dict[str, Any] | None = None
 
 

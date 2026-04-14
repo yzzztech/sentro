@@ -2,6 +2,15 @@
 
 All notable changes to Sentro are documented here.
 
+## [0.1.2] - 2026-04-14
+
+### Published
+- **sentro-sdk 0.1.2 on PyPI** — bundles `sentro.integrations.langchain` (SentroMiddleware) and `sentro.integrations.crewai` (SentroCrewListener). Users can now `pip install sentro-sdk` and import the integrations directly.
+- **@sentro/sdk 0.1.2 on npm** — adds `@sentro/sdk/vercel-ai` subpath export for the Vercel AI SDK telemetry middleware. Users can now `npm install @sentro/sdk` and `import { sentroMiddleware } from '@sentro/sdk/vercel-ai'`.
+
+### Changed
+- Removed stale duplicate `packages/integrations/vercel-ai/` folder — the integration now lives in `packages/sdk/src/integrations/vercel-ai.ts` and ships as a subpath export of `@sentro/sdk`.
+
 ## [0.1.1] - 2026-04-14
 
 ### Added

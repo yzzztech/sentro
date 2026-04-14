@@ -97,6 +97,8 @@ class Sentro:
         goal: str | None = None,
         model: str | None = None,
         trigger: str | None = None,
+        session_id: str | None = None,
+        user_id: str | None = None,
         metadata: dict[str, Any] | None = None,
     ) -> SentroRun:
         """Start a new agent run (explicit API)."""
@@ -106,6 +108,8 @@ class Sentro:
             goal=goal,
             model=model,
             trigger=trigger,
+            session_id=session_id,
+            user_id=user_id,
             metadata=metadata,
             capture_prompts=self._capture_prompts,
             tags=self._tags,
@@ -119,6 +123,8 @@ class Sentro:
         goal: str | None = None,
         model: str | None = None,
         trigger: str | None = None,
+        session_id: str | None = None,
+        user_id: str | None = None,
         metadata: dict[str, Any] | None = None,
     ) -> SentroRun:
         """Start a run as a context manager.
@@ -133,6 +139,8 @@ class Sentro:
             goal=goal,
             model=model,
             trigger=trigger,
+            session_id=session_id,
+            user_id=user_id,
             metadata=metadata,
         )
 

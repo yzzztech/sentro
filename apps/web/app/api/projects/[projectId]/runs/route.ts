@@ -14,6 +14,7 @@ export async function GET(
 
   const agent = searchParams.get("agent") ?? undefined;
   const status = searchParams.get("status") ?? undefined;
+  const sessionId = searchParams.get("sessionId");
   const limit = Math.min(parseInt(searchParams.get("limit") ?? "50", 10), 200);
   const hours = parseInt(searchParams.get("hours") ?? "24", 10);
 
@@ -24,6 +25,7 @@ export async function GET(
     startedAt: { gte: since },
     ...(agent ? { agentName: agent } : {}),
     ...(status ? { status: status as "running" | "success" | "failure" | "timeout" } : {}),
+    ...(sessionId ? { sessionId } : {}),
   };
 
   const [runs, allRuns] = await Promise.all([

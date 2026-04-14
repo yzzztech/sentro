@@ -168,6 +168,8 @@ export async function processFlush(projectDsnToken: string, events: IngestEvent[
               trigger: str(event, "trigger"),
               goal: str(event, "goal"),
               model: str(event, "model"),
+              sessionId: str(event, "sessionId", "session_id"),
+              userId: str(event, "userId", "user_id"),
               status: RunStatus.running,
               startedAt: toDate(event.timestamp),
               metadata: toJson(event.metadata),

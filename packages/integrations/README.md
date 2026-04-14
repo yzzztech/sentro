@@ -64,7 +64,7 @@ npm install @sentro/sdk
 
 ```typescript
 import { Sentro } from '@sentro/sdk';
-import { sentroMiddleware } from '@sentro/vercel-ai';
+import { sentroMiddleware } from '@sentro/sdk/vercel-ai';
 
 const sentro = new Sentro({ dsn: 'YOUR_DSN' });
 

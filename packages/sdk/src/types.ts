@@ -41,6 +41,8 @@ export interface StartRunOptions {
   goal?: string;
   model?: string;
   trigger?: string;
+  sessionId?: string;
+  userId?: string;
   metadata?: Record<string, unknown>;
 }
 

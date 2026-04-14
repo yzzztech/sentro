@@ -35,6 +35,8 @@ export class SentroRun {
       goal: options.goal,
       model: options.model,
       trigger: options.trigger,
+      sessionId: options.sessionId,
+      userId: options.userId,
       metadata: options.metadata,
       tags: { ...this.tags },
       context: { ...this.context },

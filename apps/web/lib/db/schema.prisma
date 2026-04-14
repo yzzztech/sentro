@@ -124,6 +124,8 @@ model AgentRun {
   trigger      String?
   goal         String?
   model        String?
+  sessionId    String?   @map("session_id")
+  userId       String?   @map("user_id")
   status       RunStatus @default(running)
   totalTokens  Int       @default(0) @map("total_tokens")
   totalCost    Decimal   @default(0) @map("total_cost") @db.Decimal(12, 6)
@@ -141,6 +143,8 @@ model AgentRun {
   @@index([projectId, startedAt(sort: Desc)])
   @@index([projectId, agentName, startedAt(sort: Desc)])
   @@index([projectId, status, startedAt(sort: Desc)])
+  @@index([projectId, sessionId, startedAt(sort: Desc)])
+  @@index([projectId, userId, startedAt(sort: Desc)])
   @@map("agent_runs")
 }
 

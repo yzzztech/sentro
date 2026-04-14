@@ -57,7 +57,7 @@ One-line drop-ins for popular agent frameworks. See [packages/integrations](pack
 | **OpenClaw** | `curl -fsSL https://raw.githubusercontent.com/yzzztech/sentro/main/packages/integrations/openclaw/install.sh \| bash -s -- "DSN"` | SKILL.md |
 | **LangChain** | `pip install sentro-sdk` → `from sentro.integrations.langchain import SentroMiddleware` | Python middleware |
 | **CrewAI** | `pip install sentro-sdk` → `from sentro.integrations.crewai import SentroCrewListener` | Event listener |
-| **Vercel AI SDK** | `npm install @sentro/sdk` → `sentroMiddleware(sentro)` | TypeScript middleware |
+| **Vercel AI SDK** | `npm install @sentro/sdk` → `import { sentroMiddleware } from '@sentro/sdk/vercel-ai'` | TypeScript middleware |
 | **Any OTEL-instrumented app** | Point OTLP exporter at `POST /api/v1/traces` with Bearer token | **OpenTelemetry ingestion** |
 
 ### OpenTelemetry (OTLP)
