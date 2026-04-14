@@ -134,6 +134,66 @@ export class Sentro {
     return res.json();
   }
 
+  async runEval(
+    datasetName: string,
+    runner: (input: unknown, expectedOutput: unknown) => Promise<{ output: unknown; runId?: string; scores?: Array<{ name: string; value: number; comment?: string }> }>,
+    options?: {
+      evaluator?: (actual: unknown, expected: unknown) => number | Promise<number>;
+      name?: string;
+    }
+  ): Promise<{ results: Array<{ itemId: string; output: unknown; runId?: string; scores: Array<{ name: string; value: number }> }> }> {
+    const dataset = await this.getDataset(datasetName);
+    const evalName = options?.name ?? `eval-${datasetName}-${Date.now()}`;
+    const results: Array<{ itemId: string; output: unknown; runId?: string; scores: Array<{ name: string; value: number }> }> = [];
+
+    for (const item of dataset.items) {
+      const runResult = await runner(item.input, item.expectedOutput);
+      const itemScores: Array<{ name: string; value: number }> = [];
+
+      // User-provided scores
+      if (runResult.scores) {
+        for (const s of runResult.scores) {
+          if (runResult.runId) {
+            await this.score(runResult.runId, s.name, s.value, { source: "programmatic", comment: s.comment });
+          }
+          itemScores.push({ name: s.name, value: s.value });
+        }
+      }
+
+      // Auto-evaluator
+      if (options?.evaluator && item.expectedOutput !== null && item.expectedOutput !== undefined) {
+        const score = await options.evaluator(runResult.output, item.expectedOutput);
+        if (runResult.runId) {
+          await this.score(runResult.runId, evalName, score, { source: "programmatic", comment: "auto-evaluator" });
+        }
+        itemScores.push({ name: evalName, value: score });
+      }
+
+      results.push({
+        itemId: item.id,
+        output: runResult.output,
+        runId: runResult.runId,
+        scores: itemScores,
+      });
+    }
+
+    return { results };
+  }
+
+  static evaluators = {
+    exactMatch: (actual: unknown, expected: unknown): number => {
+      return JSON.stringify(actual) === JSON.stringify(expected) ? 1 : 0;
+    },
+    contains: (actual: unknown, expected: unknown): number => {
+      const a = String(actual ?? "").toLowerCase();
+      const e = String(expected ?? "").toLowerCase();
+      return a.includes(e) ? 1 : 0;
+    },
+    regexMatch: (pattern: RegExp) => (actual: unknown): number => {
+      return pattern.test(String(actual ?? "")) ? 1 : 0;
+    },
+  };
+
   async score(
     runId: string,
     name: string,

@@ -46,6 +46,27 @@ describe("run.trace error handling", () => {
     // Step.end should reference the same stepId as step.start
     expect(stepEnd.stepId).toBe(stepStart.stepId);
   });
+
+  it("calls step.end and returns result on success", async () => {
+    const run = sentro.startRun({ agent: "run-trace-ok" });
+
+    const result = await run.trace("content", async (step) => {
+      expect(step).toBeDefined();
+      return "success-value";
+    });
+
+    expect(result).toBe("success-value");
+
+    await run.end({ status: "success" });
+    await sentro.flush();
+
+    const batch = getBatch(fetchSpy);
+    const stepStart = batch.find((e) => e.type === "step.start") as Record<string, unknown>;
+    const stepEnd = batch.find((e) => e.type === "step.end") as Record<string, unknown>;
+    expect(stepStart).toBeDefined();
+    expect(stepEnd).toBeDefined();
+    expect(stepEnd.stepId).toBe(stepStart.stepId);
+  });
 });
 
 describe("step.traceToolCall error handling", () => {
@@ -174,6 +195,21 @@ describe("transport buffer", () => {
     expect(body.batch).toHaveLength(2);
     expect(body.batch[0].message).toBe("one");
     expect(body.batch[1].message).toBe("two");
+
+    await sentro.shutdown();
+  });
+
+  it("uses default flushIntervalMs and maxBatchSize when not provided", async () => {
+    // Construct without flushIntervalMs / maxBatchSize to exercise the `??`
+    // default branches in the Transport constructor.
+    const sentro = new Sentro({ dsn: DSN });
+
+    sentro.captureMessage("default-opts");
+    await sentro.flush();
+
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    const body = JSON.parse(fetchSpy.mock.calls[0][1].body);
+    expect(body.batch[0].message).toBe("default-opts");
 
     await sentro.shutdown();
   });

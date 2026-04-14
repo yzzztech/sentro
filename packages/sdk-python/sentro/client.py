@@ -187,6 +187,61 @@ class Sentro:
         with urllib.request.urlopen(req, timeout=5) as resp:
             return _json.loads(resp.read())
 
+    def run_eval(
+        self,
+        dataset_name: str,
+        runner,  # Callable[[input, expected_output], dict with 'output', optional 'run_id', 'scores']
+        evaluator=None,  # Callable[[actual, expected], float]
+        name: str | None = None,
+    ) -> dict:
+        """Run an eval: fetch dataset, call runner for each item, optionally auto-score."""
+        import time as _time
+
+        dataset = self.get_dataset(dataset_name)
+        eval_name = name or f"eval-{dataset_name}-{int(_time.time())}"
+        results = []
+
+        for item in dataset.get("items", []):
+            run_result = runner(item["input"], item.get("expectedOutput"))
+            item_scores = []
+
+            # User-provided scores
+            for s in run_result.get("scores", []) or []:
+                if run_result.get("run_id"):
+                    self.score(
+                        run_id=run_result["run_id"],
+                        name=s["name"],
+                        value=s["value"],
+                        comment=s.get("comment"),
+                        source="programmatic",
+                    )
+                item_scores.append({"name": s["name"], "value": s["value"]})
+
+            # Auto-evaluator
+            if evaluator and item.get("expectedOutput") is not None:
+                score_value = evaluator(run_result["output"], item["expectedOutput"])
+                if hasattr(score_value, "__await__"):
+                    import asyncio
+                    score_value = asyncio.run(score_value)
+                if run_result.get("run_id"):
+                    self.score(
+                        run_id=run_result["run_id"],
+                        name=eval_name,
+                        value=float(score_value),
+                        comment="auto-evaluator",
+                        source="programmatic",
+                    )
+                item_scores.append({"name": eval_name, "value": float(score_value)})
+
+            results.append({
+                "item_id": item["id"],
+                "output": run_result["output"],
+                "run_id": run_result.get("run_id"),
+                "scores": item_scores,
+            })
+
+        return {"results": results}
+
     def score(
         self,
         run_id: str,

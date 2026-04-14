@@ -1,6 +1,7 @@
 """Sentro Python SDK -- error tracking and agent observability."""
 
 from .client import Sentro
+from .evaluators import contains, exact_match, regex_match
 from .llm_call import SentroLlmCall
 from .run import SentroRun
 from .step import SentroStep
@@ -15,4 +16,7 @@ __all__ = [
     "SentroStep",
     "SentroToolCall",
     "ParsedDsn",
+    "exact_match",
+    "contains",
+    "regex_match",
 ]
