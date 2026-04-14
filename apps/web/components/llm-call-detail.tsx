@@ -1,4 +1,6 @@
 interface LlmCallDetailProps {
+  id?: string;
+  projectId?: string;
   model: string;
   totalTokens: number;
   promptTokens: number;
@@ -10,6 +12,8 @@ interface LlmCallDetailProps {
 }
 
 export default function LlmCallDetail({
+  id,
+  projectId,
   model,
   totalTokens,
   promptTokens,
@@ -27,6 +31,14 @@ export default function LlmCallDetail({
             LLM
           </span>
           <span className="font-mono text-sm text-gray-200">{model}</span>
+          {id && projectId && (
+            <a
+              href={`/${projectId}/playground?llmCallId=${id}`}
+              className="text-xs text-green-400 hover:text-green-300 transition-colors ml-2"
+            >
+              Playground →
+            </a>
+          )}
         </div>
         <div className="flex items-center gap-3 text-xs text-gray-500">
           <span className="text-amber-400">${cost.toFixed(6)}</span>

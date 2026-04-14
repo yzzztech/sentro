@@ -140,6 +140,7 @@ export default async function RunDetailPage({ params }: RunDetailPageProps) {
         steps={steps}
         runStartedAt={run.startedAt}
         runFinishedAt={run.finishedAt}
+        projectId={projectId}
       />
     </div>
   );

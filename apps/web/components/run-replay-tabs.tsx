@@ -47,6 +47,7 @@ interface Props {
   steps: Step[];
   runStartedAt: string | Date;
   runFinishedAt: string | Date | null;
+  projectId?: string;
 }
 
 export default function RunReplayTabs(props: Props) {
@@ -133,7 +134,7 @@ export default function RunReplayTabs(props: Props) {
         </button>
       </div>
       {tab === "timeline" ? (
-        <StepTimeline steps={timelineSteps} />
+        <StepTimeline steps={timelineSteps} projectId={props.projectId} />
       ) : (
         <RunReplay
           steps={replaySteps}

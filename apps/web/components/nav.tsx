@@ -13,6 +13,7 @@ const PROJECT_TABS = [
   { label: "Agent Runs", slug: "runs" },
   { label: "Sessions", slug: "sessions" },
   { label: "Prompts", slug: "prompts" },
+  { label: "Playground", slug: "playground" },
   { label: "Datasets", slug: "datasets" },
   { label: "Scores", slug: "scores" },
   { label: "Performance", slug: "performance" },

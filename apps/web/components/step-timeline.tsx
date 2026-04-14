@@ -38,6 +38,7 @@ interface Step {
 
 interface StepTimelineProps {
   steps: Step[];
+  projectId?: string;
 }
 
 const TYPE_STYLES: Record<StepType, string> = {
@@ -50,7 +51,7 @@ function hasError(step: Step): boolean {
   return step.toolCalls.some((tc) => tc.status === "error");
 }
 
-export default function StepTimeline({ steps }: StepTimelineProps) {
+export default function StepTimeline({ steps, projectId }: StepTimelineProps) {
   if (steps.length === 0) {
     return (
       <div className="text-center py-12 border border-dashed border-gray-800 rounded-lg">
@@ -126,6 +127,8 @@ export default function StepTimeline({ steps }: StepTimelineProps) {
                   {step.llmCalls.map((lc) => (
                     <LlmCallDetail
                       key={lc.id}
+                      id={lc.id}
+                      projectId={projectId}
                       model={lc.model}
                       totalTokens={lc.totalTokens}
                       promptTokens={lc.promptTokens}
