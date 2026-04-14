@@ -112,19 +112,30 @@ export default function Nav({ projectId, projectName }: NavProps) {
 
       {/* Account */}
       <div className="px-2 py-3 border-t border-gray-800 flex flex-col">
+        <div className="px-2 text-[10px] uppercase tracking-widest text-gray-600 mb-1">Settings</div>
         <Link
           href="/settings/api-keys"
           className={`px-2 py-1.5 text-sm rounded-md transition-colors ${
-            pathname.startsWith("/settings")
+            pathname === "/settings/api-keys"
               ? "bg-gray-800 text-gray-100 font-medium"
               : "text-gray-400 hover:bg-gray-900 hover:text-gray-200"
           }`}
         >
-          Settings
+          API Keys
+        </Link>
+        <Link
+          href="/settings/audit-log"
+          className={`px-2 py-1.5 text-sm rounded-md transition-colors ${
+            pathname === "/settings/audit-log"
+              ? "bg-gray-800 text-gray-100 font-medium"
+              : "text-gray-400 hover:bg-gray-900 hover:text-gray-200"
+          }`}
+        >
+          Audit log
         </Link>
         <button
           onClick={handleSignOut}
-          className="text-left px-2 py-1.5 text-sm text-gray-400 hover:bg-gray-900 hover:text-gray-200 rounded-md transition-colors"
+          className="mt-1 text-left px-2 py-1.5 text-sm text-gray-400 hover:bg-gray-900 hover:text-gray-200 rounded-md transition-colors"
         >
           Sign out
         </button>

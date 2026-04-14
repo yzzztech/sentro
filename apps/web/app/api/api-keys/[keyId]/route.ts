@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth/middleware";
 import { prisma } from "@/lib/db/prisma";
+import { logAudit } from "@/lib/audit";
 
 export async function DELETE(
   _req: Request,
@@ -24,6 +25,13 @@ export async function DELETE(
   await prisma.apiKey.update({
     where: { id: keyId },
     data: { revokedAt: new Date() },
+  });
+
+  await logAudit({
+    action: "api_key.revoke",
+    resource: "api_key",
+    resourceId: keyId,
+    userId: auth.userId,
   });
 
   return NextResponse.json({ revoked: true });

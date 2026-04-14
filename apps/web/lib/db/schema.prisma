@@ -20,6 +20,24 @@ model User {
   @@map("users")
 }
 
+model AuditLog {
+  id         String   @id @default(uuid())
+  userId     String?  @map("user_id")
+  actorEmail String?  @map("actor_email")
+  action     String
+  resource   String
+  resourceId String?  @map("resource_id")
+  projectId  String?  @map("project_id")
+  metadata   Json     @default("{}")
+  ip         String?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([projectId, createdAt(sort: Desc)])
+  @@index([action, createdAt(sort: Desc)])
+  @@map("audit_logs")
+}
+
 model ApiKey {
   id         String    @id @default(uuid())
   userId     String    @map("user_id")

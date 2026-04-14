@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import { requireAuth } from "@/lib/auth/middleware";
 import { prisma } from "@/lib/db/prisma";
+import { logAudit } from "@/lib/audit";
 
 export async function GET() {
   const auth = await requireAuth();
@@ -45,6 +46,15 @@ export async function POST(request: NextRequest) {
   });
 
   const dsnUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/ingest/${project.dsnToken}`;
+
+  await logAudit({
+    action: "project.create",
+    resource: "project",
+    resourceId: project.id,
+    projectId: project.id,
+    userId: auth.userId,
+    metadata: { name: project.name },
+  });
 
   return NextResponse.json({ project, dsnUrl }, { status: 201 });
 }

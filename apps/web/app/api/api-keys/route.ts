@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth/middleware";
 import { prisma } from "@/lib/db/prisma";
 import { generateApiKey } from "@/lib/auth/api-key";
+import { logAudit } from "@/lib/audit";
 
 export async function GET() {
   const auth = await requireAuth();
@@ -42,6 +43,14 @@ export async function POST(req: NextRequest) {
       prefix: generated.prefix,
     },
     select: { id: true, name: true, prefix: true, createdAt: true },
+  });
+
+  await logAudit({
+    action: "api_key.create",
+    resource: "api_key",
+    resourceId: record.id,
+    userId: auth.userId,
+    metadata: { name: record.name, prefix: record.prefix },
   });
 
   // plaintext is returned ONCE, never stored
