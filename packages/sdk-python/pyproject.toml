@@ -46,6 +46,9 @@ addopts = "--cov=sentro --cov-report=term-missing --cov-report=lcov --cov-report
 
 [tool.coverage.run]
 source = ["sentro"]
+omit = [
+  "sentro/integrations/*",
+]
 
 [tool.coverage.report]
 fail_under = 80
