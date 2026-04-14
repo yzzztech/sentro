@@ -44,6 +44,17 @@ docker compose up -d
 
 Open **http://localhost:3000**, create your admin account, and you're live.
 
+### Or deploy to a hosted platform
+
+| Platform | How |
+|---|---|
+| **Railway** | New project → *Deploy from GitHub* → point at this repo. Railway reads `docker-compose.yml` and provisions Postgres automatically. |
+| **Fly.io** | `fly launch` from the repo root. The bundled `Dockerfile` is detected; provision a `fly postgres` cluster and set `DATABASE_URL`. |
+| **Render** | New *Web Service* from this repo (Docker), plus a managed *Postgres*. Wire `DATABASE_URL` in the env tab. |
+| **Any Docker host** | The image builds to a single standalone Next.js container. Point it at any Postgres 14+ with the right `DATABASE_URL`. |
+
+After first boot on any platform, run `npx prisma db push` against the target database (or let the container do it on its first start if you add that to your platform's release command).
+
 ---
 
 ## Framework Integrations — Plug and Play

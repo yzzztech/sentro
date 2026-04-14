@@ -49,7 +49,7 @@ Sentro's forward roadmap — tracked publicly. Vote via GitHub issues. Last upda
 
 ### Tier 4 — Nice to have
 
-- [ ] Helm chart / Railway / Render / Fly.io one-click deploy
+- [~] Helm chart / Railway / Render / Fly.io one-click deploy — README now documents the paths for Railway/Fly/Render on top of the existing Dockerfile. Proper Helm chart and verified platform templates still TODO.
 - [x] Screenshots in README — present in `docs/screenshots/`, referenced in the Dashboard section. _Note: pre-v0.3 sidebar refactor; refresh when time permits._
 - [ ] OTLP gRPC endpoint
 
