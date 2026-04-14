@@ -10,9 +10,9 @@
 
 ---
 
-### Sentry was built for humans. Sentro was built for agents.
+### Open source, self-hosted, agent-first observability.
 
-**Sentro** is an open-source error tracking and observability platform designed from the ground up for AI agents. It does everything Sentry does — error tracking, performance monitoring, alerting — plus first-class agent observability: run tracing, step-by-step replay, tool call monitoring, LLM call tracking, and cost analysis.
+**Sentro** is an open-source error tracking and observability platform designed from the ground up for AI agents. Error tracking, performance monitoring, alerting, plus first-class agent observability: run tracing, step-by-step replay, tool call monitoring, LLM call tracking, and cost analysis. MIT licensed, runs anywhere Docker runs.
 
 > **See what your agent was thinking when it broke — and how much it cost you.**
 
@@ -20,22 +20,17 @@
 
 ## Why Sentro?
 
-Sentry shows you **what broke**. Sentro shows you the full story:
+Built for agents from day one, not bolted on. Open source and self-hosted — you own your data.
 
-| | Sentry | Sentro |
-|---|---|---|
-| Error tracking | Yes | Yes |
-| Stack traces | Yes | Yes |
-| Issue grouping | Yes | Yes |
-| Performance monitoring | Yes | Yes |
-| Alerting | Yes | Yes |
-| **Agent run tracing** | No | **Yes** |
-| **Step-by-step replay** | No | **Yes** |
-| **Tool call monitoring** | No | **Yes** |
-| **LLM call tracking** | No | **Yes** |
-| **Token & cost tracking** | No | **Yes** |
-| **Agent failure analysis** | No | **Yes** |
-| **Event webhooks** | Limited | **Yes — 5 event types, HMAC signing, filters** |
+- **Agent-first data model** — `run → step → tool_call / llm_call` is the core primitive, not an add-on to spans
+- **Step replay** — see the exact reasoning chain, which tools were called, what inputs/outputs were passed, where it went wrong
+- **LLM call tracking** — model, provider, tokens, cost, latency per call
+- **Tool call monitoring** — inputs, outputs, latency for every tool the agent used
+- **Token & cost tracking** — know what each run costs, set budgets, alert on pace
+- **Event webhooks** — 5 event types with HMAC signing and filters, so other agents can react
+- **Prompt management + evals** — version prompts, score runs with human or LLM judges
+- **OTLP ingestion** — accept OpenTelemetry traces from any OTEL-instrumented app
+- **MIT licensed** — self-host on your infra, no usage fees, no lock-in
 
 ---
 
@@ -119,7 +114,7 @@ Sentro maps OTLP spans to its data model automatically — LLM spans (`gen_ai.*`
 npm install @sentro/sdk
 ```
 
-### Track errors (like Sentry)
+### Track errors
 
 ```typescript
 import { Sentro } from '@sentro/sdk';
@@ -129,7 +124,7 @@ const sentro = new Sentro({ dsn: 'http://token@localhost:3000/api/ingest/proj_1'
 sentro.captureException(new Error('Payment failed'));
 ```
 
-### Track agent runs (what Sentry can't do)
+### Track agent runs — built for agents from day one
 
 ```typescript
 const result = await sentro.trace('order-processor', {
@@ -190,7 +185,7 @@ with sentro.trace("order-processor", goal="Process refund #456") as run:
 
 ![Issues page](docs/screenshots/02-issues.png)
 
-### Issues — Sentry-style error tracking
+### Issues — error tracking
 Errors grouped by fingerprint, with event counts, recency, and a badge showing how many **agent runs** were affected.
 
 ### Agent Runs — the flagship view
