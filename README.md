@@ -320,8 +320,10 @@ Sentro → error.new webhook → your agent → gh issue create
 - [x] **LLM proxy mode** — zero-code instrumentation via `/v1/chat/completions` proxy
 - [x] **Prompt management** — version prompts, fetch by name from SDK
 - [x] **Evals / scoring** — score runs with human labels or LLM-as-judge
-- [ ] **Drift / guardrail alerts** — detect looping agents, token burn, repeated tool calls
+- [x] **Drift / guardrail alerts** — auto-detect looping agents, token burn, repeated tool calls
+- [x] **Datasets** — save runs as test fixtures for regression testing
 - [ ] **Session replay UI** — animated step-by-step replay with timeline scrubbing
+- [ ] **Playground** — edit and re-run LLM calls from the UI
 - [ ] **Source maps** — deobfuscate minified stack traces
 - [ ] **Redis** — caching + BullMQ job queue
 - [ ] **ClickHouse** — event analytics at scale

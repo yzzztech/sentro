@@ -8,6 +8,8 @@ Sentro's forward roadmap — tracked publicly. Vote via GitHub issues. Last upda
 - [x] **LLM proxy mode** — zero-code instrumentation via `/api/v1/proxy/chat/completions` (OpenAI) and `/api/v1/proxy/messages` (Anthropic)
 - [x] **Prompt management** — Prompt/PromptVersion models, CRUD API, `sentro.getPrompt()` / `sentro.get_prompt()` in SDKs
 - [x] **Evals / scoring** — Score model, `sentro.score(runId, name, value)` in both SDKs; supports human, LLM-as-judge, programmatic
+- [x] **Drift and guardrail alerts** — auto-detect looping agents, token burn, repeated tool calls; fires `drift_detected` webhook
+- [x] **Datasets** — save runs as test fixtures, `sentro.getDataset(name)` / `sentro.get_dataset(name)`; import runs as items
 
 ## Shipped (v0.1.1)
 
@@ -26,10 +28,10 @@ Sentro's forward roadmap — tracked publicly. Vote via GitHub issues. Last upda
 
 ### Tier 2 — Differentiating
 
-- [ ] **Drift / guardrail alerts** — detect looping agents, token burn, repeated tool calls
 - [ ] **Session replay UI** — animated timeline scrubbing with step-by-step playback
-- [ ] **Datasets** — save runs as test fixtures, re-run against new versions
 - [ ] **Playground** — edit and re-run any LLM call from the UI
+- [ ] **Dataset run evaluations** — execute dataset items through an agent endpoint, auto-score against expectedOutput
+- [ ] **Dashboard pages** for sessions, prompts, scores, datasets (backend APIs exist; UI pending)
 
 ### Tier 3 — Scale & enterprise
 
