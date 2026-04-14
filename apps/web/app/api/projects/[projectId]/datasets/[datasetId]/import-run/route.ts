@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { requireAuth } from "@/lib/auth/middleware";
 import { prisma } from "@/lib/db/prisma";
 
@@ -38,7 +39,10 @@ export async function POST(
       projectId,
       datasetId,
       input: { goal: run.goal, agent: run.agentName, model: run.model },
-      expectedOutput,
+      expectedOutput:
+        expectedOutput === null
+          ? Prisma.JsonNull
+          : (expectedOutput as Prisma.InputJsonValue),
       metadata: { importedFromRunId: runId },
       sourceRunId: runId,
     },
