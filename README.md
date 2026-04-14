@@ -6,6 +6,10 @@
 [![Python Coverage](https://img.shields.io/badge/coverage--Python-94%25-brightgreen)](packages/sdk-python)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
+**🎉 v0.2.0 just shipped** — OpenTelemetry ingestion, LLM proxy mode, prompt management, evals, drift alerts, session replay, playground, and more. [See the changelog](CHANGELOG.md).
+
+---
+
 ### Sentry was built for humans. Sentro was built for agents.
 
 **Sentro** is an open-source error tracking and observability platform designed from the ground up for AI agents. It does everything Sentry does — error tracking, performance monitoring, alerting — plus first-class agent observability: run tracing, step-by-step replay, tool call monitoring, LLM call tracking, and cost analysis.
@@ -82,7 +86,8 @@ Sentro maps OTLP spans to its data model automatically — LLM spans (`gen_ai.*`
 - **Agent run tracing** — goal, model, trigger, full step-by-step replay
 - **Tool call monitoring** — inputs, outputs, latency per tool
 - **LLM call tracking** — model, provider, tokens, cost per call
-- **Step-by-step replay** — see exactly what the agent did and why
+- **Step timeline** — vertical timeline of every step the agent took, with expandable tool and LLM call details
+- **Session replay** — animated timeline scrubber with play/pause, 1x-10x speed, click-to-seek
 
 ### Integrations
 - **OpenTelemetry (OTLP)** — accept traces from any OTEL-instrumented app
@@ -90,10 +95,14 @@ Sentro maps OTLP spans to its data model automatically — LLM spans (`gen_ai.*`
 - **Framework adapters** — Claude Code, OpenClaw, LangChain, CrewAI, Vercel AI SDK
 
 ### Workflow
-- **Prompt management** — version, tag, and fetch prompts via SDK
-- **Session grouping** — thread related runs (e.g., chat turns) into sessions
-- **Scoring & evals** — human, LLM-as-judge, and programmatic scoring
-- **Event webhooks** — `error.new`, `run.failed`, `cost.spike` (5 types, HMAC signed)
+- **Prompt management** — version, tag (production/staging), and fetch prompts via SDK with dashboard version promotion
+- **Session grouping** — thread related runs (e.g., chat turns) into sessions with dashboard UI
+- **Scoring & evals** — human, LLM-as-judge, and programmatic scoring with aggregate stats dashboard
+- **Dataset evaluations** — `sentro.runEval()` / `sentro.run_eval()` with built-in evaluators (exactMatch, contains, regexMatch)
+- **Playground** — edit and re-run any LLM call from the UI with your own API key
+- **Datasets** — save runs as test fixtures for regression testing, with dashboard UI
+- **Drift & guardrail alerts** — auto-detect looping agents, token burn, repeated tool calls
+- **Event webhooks** — `error.new`, `run.failed`, `cost.spike`, `drift_detected` (HMAC signed)
 - **Alerts** — error spike, failure rate, cost threshold with webhook notifications
 
 ### Operational
@@ -322,8 +331,9 @@ Sentro → error.new webhook → your agent → gh issue create
 - [x] **Evals / scoring** — score runs with human labels or LLM-as-judge
 - [x] **Drift / guardrail alerts** — auto-detect looping agents, token burn, repeated tool calls
 - [x] **Datasets** — save runs as test fixtures for regression testing
-- [ ] **Session replay UI** — animated step-by-step replay with timeline scrubbing
-- [ ] **Playground** — edit and re-run LLM calls from the UI
+- [x] **Session replay UI** — animated step-by-step replay with timeline scrubbing
+- [x] **Playground** — edit and re-run LLM calls from UI
+- [x] **Dataset evaluations** — runEval with built-in evaluators
 - [ ] **Source maps** — deobfuscate minified stack traces
 - [ ] **Redis** — caching + BullMQ job queue
 - [ ] **ClickHouse** — event analytics at scale

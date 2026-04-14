@@ -12,6 +12,11 @@ All notable changes to Sentro are documented here.
 - **Scoring and evals** — attach scores to runs for correctness, quality, latency, cost. Supports human raters, LLM-as-judge, and programmatic evals. `sentro.score(runId, "correctness", 0.95)`.
 - **Drift and guardrail alerts** — automatic detection of looping agents (step count or duration), token burn, and repeated tool calls. Fires `drift_detected` webhook with per-project configurable thresholds.
 - **Datasets** — save runs as test fixtures for regression testing. `sentro.getDataset("my-dataset")` / `sentro.get_dataset("my-dataset")`. Import existing runs as dataset items with one API call.
+- **Dataset evaluations** — `sentro.runEval()` / `sentro.run_eval()` with built-in evaluators (exactMatch, contains, regexMatch). Iterates dataset, runs user agent, auto-scores against expected output.
+- **Session replay UI** — animated timeline scrubber on run detail page. Play/pause, 1x-10x speed, click-to-seek. New "Replay" tab alongside existing "Timeline".
+- **Playground** — edit and re-run any LLM call from the UI. Supports OpenAI-compatible and Anthropic providers. "Playground →" link on every LLM call detail.
+- **Dashboard pages** for sessions, prompts, datasets, scores. Full UI coverage of all v0.2.0 backend features.
+- **Seed demo script** — `npm run seed:demo` populates a dashboard with realistic runs, errors, prompts, datasets, and scores for demos.
 
 ### SDK
 - **TypeScript `@sentro/sdk` 0.2.0** — adds `getPrompt()`, `score()`, and `getDataset()` methods

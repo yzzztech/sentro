@@ -10,6 +10,11 @@ Sentro's forward roadmap — tracked publicly. Vote via GitHub issues. Last upda
 - [x] **Evals / scoring** — Score model, `sentro.score(runId, name, value)` in both SDKs; supports human, LLM-as-judge, programmatic
 - [x] **Drift and guardrail alerts** — auto-detect looping agents, token burn, repeated tool calls; fires `drift_detected` webhook
 - [x] **Datasets** — save runs as test fixtures, `sentro.getDataset(name)` / `sentro.get_dataset(name)`; import runs as items
+- [x] **Session replay UI** — animated timeline scrubber on run detail page (play/pause, 1x-10x speed, click-to-seek)
+- [x] **Playground** — edit and re-run any LLM call from the UI (OpenAI-compatible and Anthropic providers)
+- [x] **Dashboard pages** for sessions, prompts, scores, datasets — full UI coverage of v0.2.0 backend features
+- [x] **Dataset run evaluations** — `sentro.runEval()` / `sentro.run_eval()` with built-in evaluators (exactMatch, contains, regexMatch)
+- [x] **Demo/seed data script** — `npm run seed:demo` populates a dashboard with realistic runs, errors, prompts, datasets, and scores
 
 ## Shipped (v0.1.1)
 
@@ -28,10 +33,9 @@ Sentro's forward roadmap — tracked publicly. Vote via GitHub issues. Last upda
 
 ### Tier 2 — Differentiating
 
-- [ ] **Session replay UI** — animated timeline scrubbing with step-by-step playback
-- [ ] **Playground** — edit and re-run any LLM call from the UI
-- [ ] **Dataset run evaluations** — execute dataset items through an agent endpoint, auto-score against expectedOutput
-- [ ] **Dashboard pages** for sessions, prompts, scores, datasets (backend APIs exist; UI pending)
+- [ ] **Protobuf OTLP** — currently JSON only, add protobuf for wider compatibility
+- [ ] **Batch eval dashboard** — see eval results over time, compare versions
+- [ ] **Human annotation queue** — UI for human raters to score runs in bulk
 
 ### Tier 3 — Scale & enterprise
 
@@ -46,9 +50,7 @@ Sentro's forward roadmap — tracked publicly. Vote via GitHub issues. Last upda
 ### Tier 4 — Nice to have
 
 - [ ] Helm chart / Railway / Render / Fly.io one-click deploy
-- [ ] Demo/seed data script
 - [ ] Screenshots in README
-- [ ] OTLP protobuf format (currently JSON only)
 - [ ] OTLP gRPC endpoint
 
 ## Contributing
