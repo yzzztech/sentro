@@ -11,6 +11,10 @@ interface NavProps {
 const PROJECT_TABS = [
   { label: "Issues", slug: "issues" },
   { label: "Agent Runs", slug: "runs" },
+  { label: "Sessions", slug: "sessions" },
+  { label: "Prompts", slug: "prompts" },
+  { label: "Datasets", slug: "datasets" },
+  { label: "Scores", slug: "scores" },
   { label: "Performance", slug: "performance" },
   { label: "Alerts", slug: "alerts" },
   { label: "Webhooks", slug: "webhooks" },
