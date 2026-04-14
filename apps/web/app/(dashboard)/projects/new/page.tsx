@@ -38,9 +38,9 @@ export default function NewProjectPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-950">
+    <div className="min-h-screen bg-gray-950 flex">
       <Nav />
-      <main className="max-w-7xl mx-auto px-4 py-8">
+      <main className="flex-1 min-w-0 px-8 py-8">
         <div className="max-w-lg">
           <h1 className="text-2xl font-bold text-gray-100 mb-6">New Project</h1>
 

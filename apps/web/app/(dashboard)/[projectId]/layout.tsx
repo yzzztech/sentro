@@ -27,9 +27,9 @@ export default async function ProjectLayout({
   }
 
   return (
-    <div className="min-h-screen bg-gray-950">
+    <div className="min-h-screen bg-gray-950 flex">
       <Nav projectId={project.id} projectName={project.name} />
-      <main className="max-w-7xl mx-auto px-4 py-8">{children}</main>
+      <main className="flex-1 min-w-0 px-8 py-8">{children}</main>
     </div>
   );
 }
