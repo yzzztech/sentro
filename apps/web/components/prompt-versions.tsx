@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { diffLines, type DiffLine } from "@/lib/text-diff";
 
 interface Version {
   version: number;
@@ -27,21 +28,48 @@ function formatDate(date: Date): string {
   return d.toLocaleString();
 }
 
+function DiffView({ diff }: { diff: DiffLine[] }) {
+  return (
+    <pre className="px-4 py-3 text-xs font-mono bg-gray-950 overflow-x-auto">
+      {diff.map((line, i) => {
+        const color =
+          line.op === "insert"
+            ? "bg-green-900/20 text-green-300 border-l-2 border-green-500/60"
+            : line.op === "delete"
+            ? "bg-red-900/20 text-red-300 border-l-2 border-red-500/60"
+            : "text-gray-400 border-l-2 border-transparent";
+        const prefix = line.op === "insert" ? "+ " : line.op === "delete" ? "- " : "  ";
+        return (
+          <div key={i} className={`${color} pl-2 whitespace-pre-wrap`}>
+            {prefix}
+            {line.text || " "}
+          </div>
+        );
+      })}
+    </pre>
+  );
+}
+
 function VersionCard({
   version,
+  previousBody,
   projectId,
   promptName,
 }: {
   version: Version;
+  previousBody: string | null;
   projectId: string;
   promptName: string;
 }) {
   const [expanded, setExpanded] = useState(false);
+  const [showDiff, setShowDiff] = useState(false);
   const [promoting, setPromoting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
   const isProduction = version.tags.includes("production");
+  const hasPrevious = previousBody !== null;
+  const diff = showDiff && hasPrevious ? diffLines(previousBody, version.body) : null;
 
   async function handlePromote() {
     setPromoting(true);
@@ -94,6 +122,14 @@ function VersionCard({
               {promoting ? "Promoting..." : "Promote to production"}
             </button>
           )}
+          {hasPrevious && (
+            <button
+              onClick={() => setShowDiff((v) => !v)}
+              className="text-xs px-3 py-1 rounded border border-gray-700 text-gray-300 hover:bg-gray-800 transition-colors"
+            >
+              {showDiff ? "Hide diff" : `Diff vs v${version.version - 1}`}
+            </button>
+          )}
           <button
             onClick={() => setExpanded((v) => !v)}
             className="text-xs px-3 py-1 rounded border border-gray-700 text-gray-300 hover:bg-gray-800 transition-colors"
@@ -107,13 +143,17 @@ function VersionCard({
           {error}
         </div>
       )}
-      <pre
-        className={`px-4 py-3 text-xs text-gray-300 whitespace-pre-wrap font-mono bg-gray-950 ${
-          expanded ? "" : "max-h-40 overflow-hidden"
-        }`}
-      >
-        {version.body}
-      </pre>
+      {diff ? (
+        <DiffView diff={diff} />
+      ) : (
+        <pre
+          className={`px-4 py-3 text-xs text-gray-300 whitespace-pre-wrap font-mono bg-gray-950 ${
+            expanded ? "" : "max-h-40 overflow-hidden"
+          }`}
+        >
+          {version.body}
+        </pre>
+      )}
     </div>
   );
 }
@@ -131,12 +171,14 @@ export default function PromptVersions({
     );
   }
 
+  // versions come in desc order — previous for versions[i] is versions[i+1]
   return (
     <div className="flex flex-col gap-4">
-      {versions.map((v) => (
+      {versions.map((v, i) => (
         <VersionCard
           key={v.version}
           version={v}
+          previousBody={versions[i + 1]?.body ?? null}
           projectId={projectId}
           promptName={promptName}
         />
