@@ -149,6 +149,17 @@ export default async function RunsPage({ params, searchParams }: RunsPageProps) 
             Clear
           </a>
         )}
+        <div className="flex-1" />
+        <a
+          href={`/api/projects/${projectId}/runs/export?${new URLSearchParams({
+            ...(statusFilter ? { status: statusFilter } : {}),
+            ...(agentFilter ? { agent: agentFilter } : {}),
+          }).toString()}`}
+          className="px-3 py-1.5 border border-gray-700 text-gray-300 hover:bg-gray-800 text-sm rounded-md"
+          title="Download up to 10,000 matching runs as CSV"
+        >
+          Export CSV ↓
+        </a>
       </form>
 
       <RunStats
