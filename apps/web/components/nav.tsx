@@ -108,11 +108,21 @@ export default function Nav({ projectId, projectName }: NavProps) {
         )}
       </div>
 
-      {/* Sign out */}
-      <div className="px-2 py-3 border-t border-gray-800">
+      {/* Account */}
+      <div className="px-2 py-3 border-t border-gray-800 flex flex-col">
+        <Link
+          href="/settings/api-keys"
+          className={`px-2 py-1.5 text-sm rounded-md transition-colors ${
+            pathname.startsWith("/settings")
+              ? "bg-gray-800 text-gray-100 font-medium"
+              : "text-gray-400 hover:bg-gray-900 hover:text-gray-200"
+          }`}
+        >
+          Settings
+        </Link>
         <button
           onClick={handleSignOut}
-          className="w-full text-left px-2 py-1.5 text-sm text-gray-400 hover:bg-gray-900 hover:text-gray-200 rounded-md transition-colors"
+          className="text-left px-2 py-1.5 text-sm text-gray-400 hover:bg-gray-900 hover:text-gray-200 rounded-md transition-colors"
         >
           Sign out
         </button>
