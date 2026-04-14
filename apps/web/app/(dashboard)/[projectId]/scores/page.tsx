@@ -24,9 +24,9 @@ export default async function ScoresPage({ params }: Props) {
   const dailyRows = await prisma.$queryRaw<
     Array<{ day: Date; name: string; avg: number }>
   >`
-    SELECT date_trunc('day', "createdAt") AS day, name, AVG(value)::float AS avg
-    FROM "Score"
-    WHERE "projectId" = ${projectId} AND "createdAt" >= ${since}
+    SELECT date_trunc('day', created_at) AS day, name, AVG(value)::float AS avg
+    FROM scores
+    WHERE project_id = ${projectId} AND created_at >= ${since}
     GROUP BY day, name
     ORDER BY day ASC
   `;
