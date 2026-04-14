@@ -183,9 +183,13 @@ with sentro.trace("order-processor", goal="Process refund #456") as run:
 
 ## The Dashboard
 
-![Issues page](docs/screenshots/02-issues.png)
+![Projects list](docs/screenshots/01-projects.png)
+
+Create a project, grab the DSN, and every run you trace shows up here.
 
 ### Issues — error tracking
+
+![Issues page](docs/screenshots/02-issues.png)
 Errors grouped by fingerprint, with event counts, recency, and a badge showing how many **agent runs** were affected.
 
 ### Agent Runs — the flagship view

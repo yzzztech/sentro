@@ -50,7 +50,7 @@ Sentro's forward roadmap — tracked publicly. Vote via GitHub issues. Last upda
 ### Tier 4 — Nice to have
 
 - [ ] Helm chart / Railway / Render / Fly.io one-click deploy
-- [ ] Screenshots in README
+- [x] Screenshots in README — present in `docs/screenshots/`, referenced in the Dashboard section. _Note: pre-v0.3 sidebar refactor; refresh when time permits._
 - [ ] OTLP gRPC endpoint
 
 ## Contributing
