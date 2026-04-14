@@ -2,6 +2,23 @@
 
 All notable changes to Sentro are documented here.
 
+## [0.2.0] - 2026-04-14
+
+### Added
+- **OpenTelemetry (OTLP) ingestion** — `POST /api/v1/traces` accepts OTLP/HTTP JSON traces. Works with any OTEL-instrumented app (OpenLLMetry, Traceloop, OpenInference, raw OTEL SDK). No Sentro SDK required.
+- **Session grouping** — group related runs into conversation threads. `sessionId` and `userId` fields on AgentRun, new `/api/projects/:id/sessions` endpoint.
+- **LLM proxy mode** — zero-code instrumentation. Point your OpenAI/Anthropic client at Sentro and get automatic tracking. `POST /api/v1/proxy/chat/completions` (OpenAI-compatible) and `POST /api/v1/proxy/messages` (Anthropic-compatible).
+- **Prompt management** — version prompts, tag them (production/staging), fetch by name from the SDK. `sentro.getPrompt("name")` / `sentro.get_prompt("name")`. Tag promotion with exclusive mode.
+- **Scoring and evals** — attach scores to runs for correctness, quality, latency, cost. Supports human raters, LLM-as-judge, and programmatic evals. `sentro.score(runId, "correctness", 0.95)`.
+
+### SDK
+- **TypeScript `@sentro/sdk` 0.2.0** — adds `getPrompt()` and `score()` methods
+- **Python `sentro-sdk` 0.2.0** — adds `get_prompt()` and `score()` methods
+
+### Infrastructure
+- Added Prompt, PromptVersion, and Score Prisma models
+- Added sessionId, userId columns to AgentRun
+
 ## [0.1.2] - 2026-04-14
 
 ### Published

@@ -1,6 +1,6 @@
 {
   "name": "@sentro/sdk",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "Error tracking and agent observability for AI agents — TypeScript SDK for Sentro",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

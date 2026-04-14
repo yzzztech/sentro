@@ -2,6 +2,13 @@
 
 Sentro's forward roadmap — tracked publicly. Vote via GitHub issues. Last updated: 2026-04-14.
 
+## Shipped (v0.2.0)
+
+- [x] **Session grouping** — group related runs into conversation threads (`sessionId`, `userId` on AgentRun, `/api/projects/:id/sessions`)
+- [x] **LLM proxy mode** — zero-code instrumentation via `/api/v1/proxy/chat/completions` (OpenAI) and `/api/v1/proxy/messages` (Anthropic)
+- [x] **Prompt management** — Prompt/PromptVersion models, CRUD API, `sentro.getPrompt()` / `sentro.get_prompt()` in SDKs
+- [x] **Evals / scoring** — Score model, `sentro.score(runId, name, value)` in both SDKs; supports human, LLM-as-judge, programmatic
+
 ## Shipped (v0.1.1)
 
 - [x] TypeScript SDK on [npm](https://www.npmjs.com/package/@sentro/sdk)
@@ -17,15 +24,8 @@ Sentro's forward roadmap — tracked publicly. Vote via GitHub issues. Last upda
 
 ## Up Next (ordered by bang-for-buck)
 
-### Tier 1 — Massive impact
-
-- [ ] **Session grouping** — group related runs into a session thread (for chat apps). Inspired by LangSmith.
-- [ ] **LLM proxy mode** — sit at `/v1/chat/completions`, forward to OpenAI/Anthropic, auto-instrument. Inspired by Helicone.
-- [ ] **Prompt management** — version prompts, tag them (staging/prod), `sentro.get_prompt("name")` in SDK. Inspired by Langfuse.
-
 ### Tier 2 — Differentiating
 
-- [ ] **Evals / scoring** — score runs on correctness, helpfulness, latency. Human labels + LLM-as-judge. Inspired by Langfuse + Braintrust.
 - [ ] **Drift / guardrail alerts** — detect looping agents, token burn, repeated tool calls
 - [ ] **Session replay UI** — animated timeline scrubbing with step-by-step playback
 - [ ] **Datasets** — save runs as test fixtures, re-run against new versions

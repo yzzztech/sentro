@@ -75,6 +75,35 @@ Sentro maps OTLP spans to its data model automatically — LLM spans (`gen_ai.*`
 
 ---
 
+## Features
+
+### Core Observability
+- **Error tracking** — fingerprinted issue groups, stack traces, affected runs
+- **Agent run tracing** — goal, model, trigger, full step-by-step replay
+- **Tool call monitoring** — inputs, outputs, latency per tool
+- **LLM call tracking** — model, provider, tokens, cost per call
+- **Step-by-step replay** — see exactly what the agent did and why
+
+### Integrations
+- **OpenTelemetry (OTLP)** — accept traces from any OTEL-instrumented app
+- **LLM proxy mode** — zero-code instrumentation via `/api/v1/proxy/*`
+- **Framework adapters** — Claude Code, OpenClaw, LangChain, CrewAI, Vercel AI SDK
+
+### Workflow
+- **Prompt management** — version, tag, and fetch prompts via SDK
+- **Session grouping** — thread related runs (e.g., chat turns) into sessions
+- **Scoring & evals** — human, LLM-as-judge, and programmatic scoring
+- **Event webhooks** — `error.new`, `run.failed`, `cost.spike` (5 types, HMAC signed)
+- **Alerts** — error spike, failure rate, cost threshold with webhook notifications
+
+### Operational
+- **Self-hosted** — single `docker compose up`
+- **PostgreSQL** — no Redis, ClickHouse, or Kafka required for v1
+- **Security hardened** — SSRF protection, rate limiting, session cleanup, CORS
+- **Open source** — MIT licensed
+
+---
+
 ## SDK — 5 Lines to Full Agent Observability
 
 ```bash
@@ -287,10 +316,10 @@ Sentro → error.new webhook → your agent → gh issue create
 - [x] **CORS middleware** — cross-origin support for browser-based SDKs
 - [x] **Framework integrations** — LangChain, CrewAI, Vercel AI SDK, Claude Code, OpenClaw
 - [x] **OpenTelemetry ingestion** — accept OTLP traces from any OTEL-instrumented app
-- [ ] **Session grouping** — group related runs into a session thread (for chat apps)
-- [ ] **LLM proxy mode** — zero-code instrumentation via `/v1/chat/completions` proxy
-- [ ] **Prompt management** — version prompts, fetch by name from SDK
-- [ ] **Evals / scoring** — score runs with human labels or LLM-as-judge
+- [x] **Session grouping** — group related runs into a session thread (for chat apps)
+- [x] **LLM proxy mode** — zero-code instrumentation via `/v1/chat/completions` proxy
+- [x] **Prompt management** — version prompts, fetch by name from SDK
+- [x] **Evals / scoring** — score runs with human labels or LLM-as-judge
 - [ ] **Drift / guardrail alerts** — detect looping agents, token burn, repeated tool calls
 - [ ] **Session replay UI** — animated step-by-step replay with timeline scrubbing
 - [ ] **Source maps** — deobfuscate minified stack traces
