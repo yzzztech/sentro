@@ -47,34 +47,19 @@ Open **http://localhost:3000**, create your admin account, and you're live.
 
 ---
 
-## One-Line Integrations — Plug and Play
+## Framework Integrations — Coming Soon
 
-Already using Claude Code, OpenClaw, LangChain, CrewAI, or Vercel AI SDK? One command and you're tracing.
+One-line drop-ins for popular agent frameworks. **Tracked in the [backlog](BACKLOG.md) — not yet shipped. Follow the repo or open an issue to vote on priority.**
 
-### Claude Code
-```bash
-curl -fsSL https://raw.githubusercontent.com/yzzztech/sentro/main/packages/integrations/claude-code/install.sh | bash -s -- "YOUR_DSN"
-```
+| Framework | Status | Planned API |
+|-----------|--------|-------------|
+| Claude Code | Planned | `curl ... /install.sh \| bash` hook registration |
+| OpenClaw | Planned | Native OpenClaw skill |
+| LangChain | Planned | `from sentro.integrations.langchain import SentroMiddleware` |
+| CrewAI | Planned | `from sentro.integrations.crewai import SentroCrewListener` |
+| Vercel AI SDK | Planned | `import { sentroMiddleware } from '@sentro/vercel-ai'` |
 
-### OpenClaw
-```bash
-curl -fsSL https://raw.githubusercontent.com/yzzztech/sentro/main/packages/integrations/openclaw/install.sh | bash -s -- "YOUR_DSN"
-```
-
-### LangChain, CrewAI
-```bash
-pip install sentro-sdk
-# then: from sentro.integrations.langchain import SentroMiddleware
-# or:   from sentro.integrations.crewai import SentroCrewListener
-```
-
-### Vercel AI SDK
-```bash
-npm install @sentro/sdk
-# then: import { sentroMiddleware } from '@sentro/vercel-ai';
-```
-
-See [full integration docs](packages/integrations/) for details.
+**In the meantime**, use the SDK directly — it works with any framework. See the [SDK section](#sdk--5-lines-to-full-agent-observability) below.
 
 ---
 
