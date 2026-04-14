@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db/prisma";
-import StepTimeline from "@/components/step-timeline";
+import RunReplayTabs from "@/components/run-replay-tabs";
 
 interface RunDetailPageProps {
   params: Promise<{ projectId: string; runId: string }>;
@@ -55,12 +55,15 @@ export default async function RunDetailPage({ params }: RunDetailPageProps) {
       toolName: tc.toolName,
       latencyMs: tc.latencyMs,
       status: tc.status,
+      input: (tc as { input?: unknown }).input ?? null,
       output: tc.output,
       errorMessage: tc.errorMessage,
+      startedAt: tc.startedAt,
     })),
     llmCalls: step.llmCalls.map((lc) => ({
       id: lc.id,
       model: lc.model,
+      provider: (lc as { provider?: string }).provider ?? "llm",
       totalTokens: lc.totalTokens,
       promptTokens: lc.promptTokens,
       completionTokens: lc.completionTokens,
@@ -68,6 +71,7 @@ export default async function RunDetailPage({ params }: RunDetailPageProps) {
       cost: Number(lc.cost),
       messages: lc.messages,
       response: lc.response,
+      startedAt: lc.startedAt,
     })),
   }));
 
@@ -132,7 +136,11 @@ export default async function RunDetailPage({ params }: RunDetailPageProps) {
         Step Replay
       </h2>
 
-      <StepTimeline steps={steps} />
+      <RunReplayTabs
+        steps={steps}
+        runStartedAt={run.startedAt}
+        runFinishedAt={run.finishedAt}
+      />
     </div>
   );
 }
