@@ -80,6 +80,37 @@ sentro = Sentro(
 - DSN tokens are API keys — treat them like passwords, don't commit them to source control  
 - Tool call inputs/outputs are stored as-is — avoid passing sensitive data (API keys, passwords) through traced tool calls
 
+## Framework Integrations
+
+### LangChain
+
+```python
+from sentro import Sentro
+from sentro.integrations.langchain import SentroMiddleware
+
+sentro = Sentro(dsn="YOUR_DSN")
+
+agent = create_agent(
+    model="gpt-4o",
+    tools=[...],
+    middleware=[SentroMiddleware(sentro)],
+)
+```
+
+Requires `pip install langchain langgraph`.
+
+### CrewAI
+
+```python
+from sentro import Sentro
+from sentro.integrations.crewai import SentroCrewListener
+
+sentro = Sentro(dsn="YOUR_DSN")
+SentroCrewListener(sentro)  # auto-registers — just kick off your crew
+```
+
+Requires `pip install crewai`.
+
 ## Links
 
 - **GitHub:** [github.com/yzzztech/sentro](https://github.com/yzzztech/sentro)

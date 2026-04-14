@@ -115,6 +115,25 @@ await sentro.shutdown();
 await sentro.flush();
 ```
 
+## Framework Integrations
+
+### Vercel AI SDK
+
+```typescript
+import { Sentro } from '@sentro/sdk';
+import { sentroMiddleware } from '@sentro/sdk/vercel-ai';
+import { generateText } from 'ai';
+import { openai } from '@ai-sdk/openai';
+
+const sentro = new Sentro({ dsn: 'YOUR_DSN' });
+
+const result = await generateText({
+  model: openai('gpt-4o'),
+  prompt: 'Hello!',
+  experimental_telemetry: sentroMiddleware(sentro),
+});
+```
+
 ## Links
 
 - **GitHub:** [github.com/yzzztech/sentro](https://github.com/yzzztech/sentro)
