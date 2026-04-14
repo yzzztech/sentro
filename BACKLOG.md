@@ -33,7 +33,7 @@ Sentro's forward roadmap — tracked publicly. Vote via GitHub issues. Last upda
 
 ### Tier 2 — Differentiating
 
-- [ ] **Protobuf OTLP** — currently JSON only, add protobuf for wider compatibility
+- [x] **Protobuf OTLP** — `/api/v1/traces` now decodes `application/x-protobuf` alongside JSON
 - [ ] **Batch eval dashboard** — ~~see eval results over time~~ ✅ done (daily trend chart on Scores page); compare versions still TODO
 - [ ] **Human annotation queue** — UI for human raters to score runs in bulk
 

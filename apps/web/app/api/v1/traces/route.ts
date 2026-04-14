@@ -2,7 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { addToBatch, startFlushTimer } from "@/lib/ingestion/buffer";
 import { translateOtlp } from "@/lib/ingestion/otlp/translate";
+import { decodeOtlpProtobuf } from "@/lib/ingestion/otlp/protobuf";
 import type { OtlpTraceRequest } from "@/lib/ingestion/otlp/types";
+
+export const runtime = "nodejs";
 
 startFlushTimer();
 
@@ -15,18 +18,21 @@ export async function POST(req: NextRequest) {
   }
 
   const contentType = req.headers.get("content-type") ?? "";
-  if (contentType.includes("application/x-protobuf")) {
-    return NextResponse.json(
-      { error: "Protobuf format not yet supported. Use Content-Type: application/json" },
-      { status: 415 }
-    );
-  }
+  const isProtobuf = contentType.includes("application/x-protobuf");
 
   let body: OtlpTraceRequest;
   try {
-    body = await req.json();
+    if (isProtobuf) {
+      const buf = new Uint8Array(await req.arrayBuffer());
+      body = decodeOtlpProtobuf(buf);
+    } else {
+      body = await req.json();
+    }
   } catch {
-    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    return NextResponse.json(
+      { error: isProtobuf ? "Invalid protobuf body" : "Invalid JSON body" },
+      { status: 400 }
+    );
   }
 
   const project = await prisma.project.findUnique({ where: { dsnToken: bearerToken } });
