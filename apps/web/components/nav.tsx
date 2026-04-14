@@ -22,6 +22,7 @@ const NAV_GROUPS: NavGroup[] = [
   {
     label: "Monitor",
     items: [
+      { label: "Overview", slug: "" },
       { label: "Issues", slug: "issues" },
       { label: "Agent Runs", slug: "runs" },
       { label: "Sessions", slug: "sessions" },
@@ -83,9 +84,10 @@ export default function Nav({ projectId, projectName }: NavProps) {
               </div>
               <div className="flex flex-col">
                 {group.items.map(({ label, slug }) => {
-                  const href = `/${projectId}/${slug}`;
-                  const isActive =
-                    pathname === href || pathname.startsWith(`${href}/`);
+                  const href = slug ? `/${projectId}/${slug}` : `/${projectId}`;
+                  const isActive = slug
+                    ? pathname === href || pathname.startsWith(`${href}/`)
+                    : pathname === `/${projectId}` || pathname === `/${projectId}/`;
                   return (
                     <Link
                       key={slug}

@@ -39,7 +39,7 @@ export default async function ProjectsPage() {
             {projects.map((project) => (
               <Link
                 key={project.id}
-                href={`/${project.id}/issues`}
+                href={`/${project.id}`}
                 className="block p-4 bg-gray-900 border border-gray-800 rounded-lg hover:border-gray-700 transition-colors"
               >
                 <div className="flex items-center justify-between">
