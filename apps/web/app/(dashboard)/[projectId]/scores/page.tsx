@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db/prisma";
 import ScoresTable from "@/components/scores-table";
+import ScoreTrendChart from "@/components/score-trend-chart";
 
 interface Props {
   params: Promise<{ projectId: string }>;
@@ -18,6 +19,29 @@ export default async function ScoresPage({ params }: Props) {
     _min: { value: true },
     _max: { value: true },
   });
+
+  // Daily trend: avg score value per name per day
+  const dailyRows = await prisma.$queryRaw<
+    Array<{ day: Date; name: string; avg: number }>
+  >`
+    SELECT date_trunc('day', "createdAt") AS day, name, AVG(value)::float AS avg
+    FROM "Score"
+    WHERE "projectId" = ${projectId} AND "createdAt" >= ${since}
+    GROUP BY day, name
+    ORDER BY day ASC
+  `;
+
+  const dayMap = new Map<string, Record<string, number | string>>();
+  const scoreNameSet = new Set<string>();
+  for (const row of dailyRows) {
+    const key = row.day.toISOString().slice(0, 10);
+    scoreNameSet.add(row.name);
+    const entry = dayMap.get(key) ?? { date: key.slice(5) };
+    entry[row.name] = Number(row.avg.toFixed(3));
+    dayMap.set(key, entry);
+  }
+  const trendData = Array.from(dayMap.values()) as Array<{ date: string } & Record<string, number | string>>;
+  const scoreNames = Array.from(scoreNameSet).sort();
 
   // Recent individual scores for the table
   const recentScores = await prisma.score.findMany({
@@ -58,6 +82,10 @@ export default async function ScoresPage({ params }: Props) {
           <h1 className="text-2xl font-bold text-gray-100">Scores</h1>
           <p className="text-sm text-gray-500 mt-0.5">Quality metrics from the last 7 days</p>
         </div>
+      </div>
+
+      <div className="mb-8">
+        <ScoreTrendChart data={trendData} scoreNames={scoreNames} />
       </div>
 
       {/* Aggregate summary cards */}
