@@ -144,6 +144,35 @@ class Sentro:
             metadata=metadata,
         )
 
+    def get_prompt(
+        self,
+        name: str,
+        tag: str | None = None,
+        version: int | None = None,
+    ) -> dict:
+        """Fetch a prompt by name, optionally filtered by tag or version."""
+        import json as _json
+        import urllib.parse
+        import urllib.request
+
+        params: dict[str, str] = {}
+        if tag:
+            params["tag"] = tag
+        if version:
+            params["version"] = str(version)
+
+        query = urllib.parse.urlencode(params)
+        url = f"{self._parsed_dsn.host}/api/v1/prompts/{urllib.parse.quote(name)}"
+        if query:
+            url += f"?{query}"
+
+        req = urllib.request.Request(
+            url,
+            headers={"Authorization": f"Bearer {self._parsed_dsn.token}"},
+        )
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            return _json.loads(resp.read())
+
     def flush(self) -> None:
         """Flush all buffered events."""
         self._transport.flush()

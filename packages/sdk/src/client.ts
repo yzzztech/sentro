@@ -91,6 +91,32 @@ export class Sentro {
     }
   }
 
+  async getPrompt(
+    name: string,
+    options?: { tag?: string; version?: number }
+  ): Promise<{
+    name: string;
+    version: number;
+    body: string;
+    variables: string[];
+    tags: string[];
+  }> {
+    const params = new URLSearchParams();
+    if (options?.tag) params.set("tag", options.tag);
+    if (options?.version) params.set("version", String(options.version));
+
+    const qs = params.toString();
+    const url = `${this.parsedDsn.host}/api/v1/prompts/${encodeURIComponent(name)}${qs ? `?${qs}` : ""}`;
+
+    const res = await fetch(url, {
+      headers: { Authorization: `Bearer ${this.parsedDsn.token}` },
+    });
+    if (!res.ok) {
+      throw new Error(`Failed to fetch prompt: ${res.status}`);
+    }
+    return res.json();
+  }
+
   async flush(): Promise<void> {
     await this.transport.flush();
   }

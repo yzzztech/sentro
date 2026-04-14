@@ -50,6 +50,8 @@ model Project {
   alertRules         AlertRule[]
   alertHistory       AlertHistory[]
   webhooks           Webhook[]
+  prompts            Prompt[]
+  promptVersions     PromptVersion[]
 
   @@map("projects")
 }
@@ -289,4 +291,36 @@ model AlertHistory {
   @@index([ruleId, triggeredAt(sort: Desc)])
   @@index([projectId, triggeredAt(sort: Desc)])
   @@map("alert_history")
+}
+
+model Prompt {
+  id          String          @id @default(uuid())
+  projectId   String          @map("project_id")
+  name        String
+  description String?
+  createdAt   DateTime        @default(now()) @map("created_at")
+  updatedAt   DateTime        @updatedAt @map("updated_at")
+  project     Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  versions    PromptVersion[]
+
+  @@unique([projectId, name])
+  @@map("prompts")
+}
+
+model PromptVersion {
+  id          String   @id @default(uuid())
+  promptId    String   @map("prompt_id")
+  projectId   String   @map("project_id")
+  version     Int
+  body        String   @db.Text
+  variables   Json     @default("[]")
+  metadata    Json     @default("{}")
+  tags        String[] @default([])
+  createdAt   DateTime @default(now()) @map("created_at")
+  prompt      Prompt   @relation(fields: [promptId], references: [id], onDelete: Cascade)
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([promptId, version])
+  @@index([projectId, promptId, version(sort: Desc)])
+  @@map("prompt_versions")
 }
