@@ -173,6 +173,43 @@ class Sentro:
         with urllib.request.urlopen(req, timeout=5) as resp:
             return _json.loads(resp.read())
 
+    def score(
+        self,
+        run_id: str,
+        name: str,
+        value: float,
+        comment: str | None = None,
+        source: str = "programmatic",
+        metadata: dict | None = None,
+    ) -> None:
+        """Attach a score to a run."""
+        import urllib.request
+        import json as _json
+
+        url = f"{self._parsed_dsn.host}/api/v1/scores"
+        payload = {
+            "runId": run_id,
+            "name": name,
+            "value": value,
+            "comment": comment,
+            "source": source,
+            "metadata": metadata or {},
+        }
+
+        req = urllib.request.Request(
+            url,
+            data=_json.dumps(payload).encode("utf-8"),
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {self._parsed_dsn.token}",
+            },
+            method="POST",
+        )
+        try:
+            urllib.request.urlopen(req, timeout=5).read()
+        except Exception:
+            pass  # Fire-and-forget
+
     def flush(self) -> None:
         """Flush all buffered events."""
         self._transport.flush()

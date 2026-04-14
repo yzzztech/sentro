@@ -117,6 +117,36 @@ export class Sentro {
     return res.json();
   }
 
+  async score(
+    runId: string,
+    name: string,
+    value: number,
+    options?: {
+      comment?: string;
+      source?: "human" | "llm_judge" | "programmatic";
+      metadata?: Record<string, unknown>;
+    }
+  ): Promise<void> {
+    const baseUrl = this.parsedDsn.host;
+    const token = this.parsedDsn.token;
+
+    await fetch(`${baseUrl}/api/v1/scores`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        runId,
+        name,
+        value,
+        comment: options?.comment,
+        source: options?.source ?? "programmatic",
+        metadata: options?.metadata,
+      }),
+    });
+  }
+
   async flush(): Promise<void> {
     await this.transport.flush();
   }
