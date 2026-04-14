@@ -1,9 +1,19 @@
 {
   "name": "@sentro/sdk",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Error tracking and agent observability for AI agents — TypeScript SDK for Sentro",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./vercel-ai": {
+      "types": "./dist/integrations/vercel-ai.d.ts",
+      "default": "./dist/integrations/vercel-ai.js"
+    }
+  },
   "files": [
     "dist",
     "README.md"
