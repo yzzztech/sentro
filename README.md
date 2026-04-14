@@ -47,19 +47,31 @@ Open **http://localhost:3000**, create your admin account, and you're live.
 
 ---
 
-## Framework Integrations — Coming Soon
+## Framework Integrations — Plug and Play
 
-One-line drop-ins for popular agent frameworks. **Tracked in the [backlog](BACKLOG.md) — not yet shipped. Follow the repo or open an issue to vote on priority.**
+One-line drop-ins for popular agent frameworks. See [packages/integrations](packages/integrations/) for details.
 
-| Framework | Status | Planned API |
-|-----------|--------|-------------|
-| Claude Code | Planned | `curl ... /install.sh \| bash` hook registration |
-| OpenClaw | Planned | Native OpenClaw skill |
-| LangChain | Planned | `from sentro.integrations.langchain import SentroMiddleware` |
-| CrewAI | Planned | `from sentro.integrations.crewai import SentroCrewListener` |
-| Vercel AI SDK | Planned | `import { sentroMiddleware } from '@sentro/vercel-ai'` |
+| Framework | Install | Type |
+|-----------|---------|------|
+| **Claude Code** | `curl -fsSL https://raw.githubusercontent.com/yzzztech/sentro/main/packages/integrations/claude-code/install.sh \| bash -s -- "DSN"` | Shell hook |
+| **OpenClaw** | `curl -fsSL https://raw.githubusercontent.com/yzzztech/sentro/main/packages/integrations/openclaw/install.sh \| bash -s -- "DSN"` | SKILL.md |
+| **LangChain** | `pip install sentro-sdk` → `from sentro.integrations.langchain import SentroMiddleware` | Python middleware |
+| **CrewAI** | `pip install sentro-sdk` → `from sentro.integrations.crewai import SentroCrewListener` | Event listener |
+| **Vercel AI SDK** | `npm install @sentro/sdk` → `sentroMiddleware(sentro)` | TypeScript middleware |
+| **Any OTEL-instrumented app** | Point OTLP exporter at `POST /api/v1/traces` with Bearer token | **OpenTelemetry ingestion** |
 
-**In the meantime**, use the SDK directly — it works with any framework. See the [SDK section](#sdk--5-lines-to-full-agent-observability) below.
+### OpenTelemetry (OTLP)
+
+Works with **any OpenTelemetry-instrumented app** — OpenLLMetry, Traceloop, OpenInference, or raw OTEL SDKs. No Sentro SDK required.
+
+```bash
+# Point your OTLP exporter at Sentro
+export OTEL_EXPORTER_OTLP_ENDPOINT="http://localhost:3000/api/v1/traces"
+export OTEL_EXPORTER_OTLP_HEADERS="Authorization=Bearer YOUR_DSN_TOKEN"
+export OTEL_EXPORTER_OTLP_PROTOCOL="http/json"
+```
+
+Sentro maps OTLP spans to its data model automatically — LLM spans (`gen_ai.*` attributes) become LLM calls, tool spans (`tool.*`) become tool calls, and root spans become agent runs.
 
 ---
 
@@ -273,7 +285,12 @@ Sentro → error.new webhook → your agent → gh issue create
 - [x] **Security hardening** — SSRF protection, login rate limiting, setup race fix, ingest validation, session cleanup
 - [x] **CI/CD pipeline** — GitHub Actions with tests, build, and security audit on every PR
 - [x] **CORS middleware** — cross-origin support for browser-based SDKs
-- [ ] **Framework integrations** — auto-instrumentation for LangChain, CrewAI, Vercel AI SDK
+- [x] **Framework integrations** — LangChain, CrewAI, Vercel AI SDK, Claude Code, OpenClaw
+- [x] **OpenTelemetry ingestion** — accept OTLP traces from any OTEL-instrumented app
+- [ ] **Session grouping** — group related runs into a session thread (for chat apps)
+- [ ] **LLM proxy mode** — zero-code instrumentation via `/v1/chat/completions` proxy
+- [ ] **Prompt management** — version prompts, fetch by name from SDK
+- [ ] **Evals / scoring** — score runs with human labels or LLM-as-judge
 - [ ] **Drift / guardrail alerts** — detect looping agents, token burn, repeated tool calls
 - [ ] **Session replay UI** — animated step-by-step replay with timeline scrubbing
 - [ ] **Source maps** — deobfuscate minified stack traces

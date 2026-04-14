@@ -1,50 +1,54 @@
 # Backlog
 
-Ideas captured for future work. Not sequenced, not committed.
+Sentro's forward roadmap — tracked publicly. Vote via GitHub issues. Last updated: 2026-04-14.
 
-## Integrations (README-promised, need to ship)
+## Shipped (v0.1.1)
 
-- [ ] **Claude Code install script** — `curl | bash` that registers Sentro as a Claude Code hook and traces every session
-- [ ] **OpenClaw skill** — auto-instrument OpenClaw agent runs, track tool calls (file, shell, browser) and LLM calls. Needs research into OpenClaw plugin API
-- [ ] **LangChain callback handler** — `from sentro.integrations.langchain import SentroMiddleware`. Subclass `BaseCallbackHandler`, route events to SDK
-- [ ] **CrewAI listener** — `from sentro.integrations.crewai import SentroCrewListener`. Hook into CrewAI's event system for crew tasks
-- [ ] **Vercel AI SDK middleware** — `@sentro/vercel-ai` package that wraps `generateText`/`streamText` and traces LLM calls
+- [x] TypeScript SDK on [npm](https://www.npmjs.com/package/@sentro/sdk)
+- [x] Python SDK on [PyPI](https://pypi.org/project/sentro-sdk/)
+- [x] Code coverage: TS 96%, Python 94%
+- [x] Event webhooks (5 event types, HMAC signing, filters)
+- [x] Security hardening: SSRF protection, rate limiting, session cleanup
+- [x] GitHub Actions CI pipeline
+- [x] CORS middleware for cross-origin SDKs
+- [x] Framework integrations: Claude Code, OpenClaw, LangChain, CrewAI, Vercel AI SDK
+- [x] One-line installers for Claude Code and OpenClaw
+- [x] **OTLP ingestion** — accept OpenTelemetry traces at `/api/v1/traces`
 
-## Adoption
+## Up Next (ordered by bang-for-buck)
 
-- [ ] **Example apps repo** — real agents using Sentro (RAG bot, code reviewer, support agent)
-- [ ] **One-click deploy buttons** — Railway, Render, Fly.io badges in README
-- [ ] **Demo GIF in README** — show step replay in action
-- [ ] **Landing page** — marketing site with waitlist for hosted SaaS
-- [ ] **Video walkthrough** — screencast of setup → first trace → debug a failing agent
+### Tier 1 — Massive impact
 
-## Features
+- [ ] **Session grouping** — group related runs into a session thread (for chat apps). Inspired by LangSmith.
+- [ ] **LLM proxy mode** — sit at `/v1/chat/completions`, forward to OpenAI/Anthropic, auto-instrument. Inspired by Helicone.
+- [ ] **Prompt management** — version prompts, tag them (staging/prod), `sentro.get_prompt("name")` in SDK. Inspired by Langfuse.
 
-- [ ] **Search across errors/runs** — full-text + filter by agent, model, cost, date
-- [ ] **Email notifications** — not just webhooks; for people who don't run other agents
-- [ ] **Slack/Discord native integrations** — slash commands, not just webhook URLs
-- [ ] **Drift/guardrail alerts** — detect looping agents, token burn, repeated tool calls
-- [ ] **Session replay UI** — animated step-by-step replay with timeline scrubbing
+### Tier 2 — Differentiating
+
+- [ ] **Evals / scoring** — score runs on correctness, helpfulness, latency. Human labels + LLM-as-judge. Inspired by Langfuse + Braintrust.
+- [ ] **Drift / guardrail alerts** — detect looping agents, token burn, repeated tool calls
+- [ ] **Session replay UI** — animated timeline scrubbing with step-by-step playback
+- [ ] **Datasets** — save runs as test fixtures, re-run against new versions
+- [ ] **Playground** — edit and re-run any LLM call from the UI
+
+### Tier 3 — Scale & enterprise
+
 - [ ] **Source maps** — deobfuscate minified stack traces
-- [ ] **Cost budgets** — set monthly/daily caps, alert on pace
-- [ ] **Custom dashboards** — user-defined metric panels
+- [ ] **Redis** — caching + BullMQ job queue
+- [ ] **ClickHouse** — event analytics at scale
+- [ ] **SaaS mode** — multi-tenancy, teams, RBAC
+- [ ] **SSO / SAML**
+- [ ] **Audit log**
+- [ ] **Grafana dashboard template**
 
-## Infrastructure
+### Tier 4 — Nice to have
 
-- [ ] **Redis + BullMQ** — replace pg-boss for horizontal scaling
-- [ ] **ClickHouse** — analytical queries over billions of events
-- [ ] **Kubernetes Helm chart** — official chart for enterprise deploys
-- [ ] **Multi-region** — geo-distributed ingest endpoints
-- [ ] **Prometheus/Grafana export** — metrics for teams already on that stack
+- [ ] Helm chart / Railway / Render / Fly.io one-click deploy
+- [ ] Demo/seed data script
+- [ ] Screenshots in README
+- [ ] OTLP protobuf format (currently JSON only)
+- [ ] OTLP gRPC endpoint
 
-## Polish
+## Contributing
 
-- [ ] **SECURITY.md** — responsible disclosure policy
-- [ ] **Issue templates** — bug report, feature request, integration request
-- [ ] **GitHub Discussions** — enable, seed with FAQ
-- [ ] **Code of Conduct**
-- [ ] **OpenAPI spec** — generated from Next.js API routes
-- [ ] **Blog post** — "Why we built Sentro" with architecture + design decisions
-- [ ] **E2E tests** — Playwright for the dashboard
-- [ ] **Load testing** — verify ingest handles claimed throughput
-- [ ] **Accessibility audit** — WCAG 2.1 AA on the dashboard
+Pick anything from this list and open a PR. For larger items, open an issue first to align on approach.

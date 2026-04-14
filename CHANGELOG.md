@@ -4,6 +4,11 @@ All notable changes to Sentro are documented here.
 
 ## [0.1.1] - 2026-04-14
 
+### Added
+- **OpenTelemetry (OTLP) ingestion** — new endpoint `POST /api/v1/traces` accepts OTLP/HTTP JSON traces. Works with any OTEL-instrumented app (OpenLLMetry, Traceloop, OpenInference, raw OTEL SDK). Translates spans to Sentro's native event format and feeds through existing processor. No SDK required.
+- **Framework integrations** — built-in adapters for Claude Code (shell hooks), OpenClaw (SKILL.md), LangChain (AgentMiddleware), CrewAI (BaseEventListener), Vercel AI SDK (telemetry middleware)
+- **One-line installers** — `curl ... /install.sh | bash` for Claude Code and OpenClaw
+
 ### Infrastructure
 - **GitHub Actions CI** — runs TypeScript SDK tests, Python SDK tests, Next.js build with Postgres, and `npm audit` on every push and PR
 - **CORS middleware** — `/api/ingest` now accepts cross-origin requests from any origin, enabling browser-based SDKs
