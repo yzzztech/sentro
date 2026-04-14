@@ -82,6 +82,12 @@ export default async function ScoresPage({ params }: Props) {
           <h1 className="text-2xl font-bold text-gray-100">Scores</h1>
           <p className="text-sm text-gray-500 mt-0.5">Quality metrics from the last 7 days</p>
         </div>
+        <a
+          href={`/${projectId}/scores/annotate`}
+          className="text-sm px-3 py-1.5 border border-gray-700 rounded-md text-gray-200 hover:bg-gray-800"
+        >
+          Annotate runs →
+        </a>
       </div>
 
       <div className="mb-8">
