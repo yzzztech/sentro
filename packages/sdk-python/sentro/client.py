@@ -173,6 +173,20 @@ class Sentro:
         with urllib.request.urlopen(req, timeout=5) as resp:
             return _json.loads(resp.read())
 
+    def get_dataset(self, name: str) -> dict:
+        """Fetch a dataset by name with all its items."""
+        import urllib.parse
+        import urllib.request
+        import json as _json
+
+        url = f"{self._parsed_dsn.host}/api/v1/datasets/{urllib.parse.quote(name)}/items"
+        req = urllib.request.Request(
+            url,
+            headers={"Authorization": f"Bearer {self._parsed_dsn.token}"},
+        )
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            return _json.loads(resp.read())
+
     def score(
         self,
         run_id: str,

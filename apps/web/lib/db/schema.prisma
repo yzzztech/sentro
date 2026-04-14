@@ -57,6 +57,8 @@ model Project {
   prompts            Prompt[]
   promptVersions     PromptVersion[]
   scores             Score[]
+  datasets           Dataset[]
+  datasetItems       DatasetItem[]
 
   @@map("projects")
 }
@@ -355,4 +357,35 @@ model Score {
   @@index([projectId, name, createdAt(sort: Desc)])
   @@index([runId])
   @@map("scores")
+}
+
+model Dataset {
+  id          String         @id @default(uuid())
+  projectId   String         @map("project_id")
+  name        String
+  description String?
+  createdAt   DateTime       @default(now()) @map("created_at")
+  updatedAt   DateTime       @updatedAt @map("updated_at")
+  project     Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  items       DatasetItem[]
+
+  @@unique([projectId, name])
+  @@map("datasets")
+}
+
+model DatasetItem {
+  id             String   @id @default(uuid())
+  datasetId      String   @map("dataset_id")
+  projectId      String   @map("project_id")
+  input          Json
+  expectedOutput Json?    @map("expected_output")
+  metadata       Json     @default("{}")
+  sourceRunId    String?  @map("source_run_id")
+  createdAt      DateTime @default(now()) @map("created_at")
+  dataset        Dataset  @relation(fields: [datasetId], references: [id], onDelete: Cascade)
+  project        Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([datasetId])
+  @@index([projectId, datasetId])
+  @@map("dataset_items")
 }

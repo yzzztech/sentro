@@ -117,6 +117,23 @@ export class Sentro {
     return res.json();
   }
 
+  async getDataset(name: string): Promise<{
+    name: string;
+    description: string | null;
+    items: Array<{ id: string; input: unknown; expectedOutput: unknown; metadata: Record<string, unknown> }>;
+  }> {
+    const baseUrl = this.parsedDsn.host;
+    const token = this.parsedDsn.token;
+
+    const res = await fetch(`${baseUrl}/api/v1/datasets/${encodeURIComponent(name)}/items`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) {
+      throw new Error(`Failed to fetch dataset: ${res.status}`);
+    }
+    return res.json();
+  }
+
   async score(
     runId: string,
     name: string,
