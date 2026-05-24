@@ -45,7 +45,8 @@ export async function POST(request: NextRequest) {
     },
   });
 
-  const dsnUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/ingest/${project.dsnToken}`;
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || request.headers.get("origin") || "http://localhost:3000";
+  const dsnUrl = `${appUrl}/api/ingest/${project.dsnToken}`;
 
   await logAudit({
     action: "project.create",

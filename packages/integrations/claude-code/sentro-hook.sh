@@ -119,7 +119,7 @@ esac
 
 # Send to Sentro (fire-and-forget, never block Claude)
 BODY=$(jq -c -n \
-  --arg dsn "$SENTRO_DSN" \
+  --arg dsn "$DSN_TOKEN" \
   --argjson event "$PAYLOAD" \
   '{ dsn: $dsn, batch: [$event] }')
 

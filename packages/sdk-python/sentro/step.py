@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 from typing import Any
 
 from .llm_call import SentroLlmCall
+from .types import utc_now_iso
 from .tool_call import SentroToolCall
 from .transport import Transport
 
@@ -32,7 +33,7 @@ class SentroStep:
         self._transport.send(
             {
                 "type": "step.start",
-                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "timestamp": utc_now_iso(),
                 "runId": self._run_id,
                 "stepId": self._step_id,
                 "sequenceNumber": self._seq,
@@ -89,7 +90,7 @@ class SentroStep:
         self._transport.send(
             {
                 "type": "step.end",
-                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "timestamp": utc_now_iso(),
                 "runId": self._run_id,
                 "stepId": self._step_id,
                 "sequenceNumber": self._seq,

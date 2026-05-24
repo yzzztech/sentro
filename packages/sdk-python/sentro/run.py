@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 from typing import Any
 
 from .step import SentroStep
+from .types import utc_now_iso
 from .transport import Transport
 
 
@@ -37,7 +38,7 @@ class SentroRun:
         self._transport.send(
             {
                 "type": "run.start",
-                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "timestamp": utc_now_iso(),
                 "runId": self._run_id,
                 "agent": agent,
                 "goal": goal,
@@ -80,7 +81,7 @@ class SentroRun:
         self._transport.send(
             {
                 "type": "run.end",
-                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "timestamp": utc_now_iso(),
                 "runId": self._run_id,
                 "status": status,
                 "errorType": error_type,

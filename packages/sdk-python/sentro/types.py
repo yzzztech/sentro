@@ -3,7 +3,17 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from datetime import datetime, timezone
 from typing import Any, Literal
+
+
+def utc_now_iso() -> str:
+    """Return current UTC time as ISO 8601 string with Z suffix.
+
+    zod's z.string().datetime() only accepts 'Z' suffix, not '+00:00'.
+    """
+    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.") + \
+           str(datetime.now(timezone.utc).microsecond // 1000).zfill(3) + "Z"
 
 
 @dataclass

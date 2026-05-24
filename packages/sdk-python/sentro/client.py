@@ -9,7 +9,7 @@ from urllib.parse import urlparse
 
 from .run import SentroRun
 from .transport import Transport
-from .types import EventLevel, ParsedDsn, SentroConfig
+from .types import EventLevel, ParsedDsn, SentroConfig, utc_now_iso
 
 
 def _parse_dsn(dsn: str) -> ParsedDsn:
@@ -64,7 +64,7 @@ class Sentro:
         self._transport.send(
             {
                 "type": "event",
-                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "timestamp": utc_now_iso(),
                 "level": "error",
                 "message": str(error),
                 "stackTrace": "".join(
@@ -82,7 +82,7 @@ class Sentro:
         self._transport.send(
             {
                 "type": "event",
-                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "timestamp": utc_now_iso(),
                 "level": level,
                 "message": message,
                 "tags": dict(self._tags),

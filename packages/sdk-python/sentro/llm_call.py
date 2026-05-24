@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 from typing import Any
 
 from .transport import Transport
+from .types import utc_now_iso
 
 
 class SentroLlmCall:
@@ -32,7 +33,7 @@ class SentroLlmCall:
 
         event: dict[str, Any] = {
             "type": "llm_call.start",
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": utc_now_iso(),
             "runId": self._run_id,
             "stepId": self._step_id,
             "llmCallId": self._llm_call_id,
@@ -57,7 +58,7 @@ class SentroLlmCall:
         """End the LLM call with token usage and optional response."""
         event: dict[str, Any] = {
             "type": "llm_call.end",
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": utc_now_iso(),
             "runId": self._run_id,
             "stepId": self._step_id,
             "llmCallId": self._llm_call_id,

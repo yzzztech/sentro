@@ -6,10 +6,17 @@ services:
       - "3456:3000"
     environment:
       DATABASE_URL: "postgresql://${POSTGRES_USER:-sentro}:${POSTGRES_PASSWORD:-sentro}@db:5432/${POSTGRES_DB:-sentro}?schema=public"
-      NEXT_PUBLIC_APP_URL: "http://localhost:3000"
+      NEXT_PUBLIC_APP_URL: "${NEXT_PUBLIC_APP_URL:-http://localhost:3000}"
+      SESSION_SECRET: "${SESSION_SECRET:-change-me-in-production}"
     depends_on:
       db:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/api/health | grep -q ok || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
     restart: unless-stopped
   db:
     image: postgres:16-alpine

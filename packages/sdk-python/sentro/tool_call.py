@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 from typing import Any
 
 from .transport import Transport
+from .types import utc_now_iso
 
 
 class SentroToolCall:
@@ -30,7 +31,7 @@ class SentroToolCall:
         self._transport.send(
             {
                 "type": "tool_call.start",
-                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "timestamp": utc_now_iso(),
                 "runId": self._run_id,
                 "stepId": self._step_id,
                 "toolCallId": self._tool_call_id,
@@ -53,7 +54,7 @@ class SentroToolCall:
         self._transport.send(
             {
                 "type": "tool_call.end",
-                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "timestamp": utc_now_iso(),
                 "runId": self._run_id,
                 "stepId": self._step_id,
                 "toolCallId": self._tool_call_id,
