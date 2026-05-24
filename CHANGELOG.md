@@ -2,6 +2,19 @@
 
 All notable changes to Sentro are documented here.
 
+## [0.2.1] - 2026-05-24
+
+### Fixed
+- **DSN token precedence bug (#1)** — When a client sends the full DSN URL (e.g. `http://TOKEN@host/api/ingest/PROJECT`) in the JSON body's `dsn` field — which the official Claude Code hook does — the full URL shadowed the Bearer token, causing all events to be silently dropped with `401 Invalid DSN token`. Now extracts the token from URL-shaped DSNs with correct precedence: Bearer > token_from_url > plain_dsn.
+
+### Added
+- **Multica Agent monitoring** — `tools/sentro-multica-watcher.py` tails the Multica daemon log and reports agent runs (completions, failures, blocks) to Sentro in real-time.
+- **Usage & Cost tracking** — Sentro API key `sk_*` can now fetch project runs, costs, tokens, and success rates via `/api/projects/:id/runs`. Live dashboard at `~/Desktop/multica-usage.html`.
+
+### Infrastructure
+- Added `totalCost` and `totalTokens` columns to AgentRun model
+- Agent Runs endpoint now returns cost and token data
+
 ## [0.2.0] - 2026-04-14
 
 ### Added
@@ -28,58 +41,16 @@ All notable changes to Sentro are documented here.
 - Added drift threshold columns to Project (configurable per project)
 - Added drift_detected enum value to WebhookEvent
 
-## [0.1.2] - 2026-04-14
-
-### Published
-- **sentro-sdk 0.1.2 on PyPI** — bundles `sentro.integrations.langchain` (SentroMiddleware) and `sentro.integrations.crewai` (SentroCrewListener). Users can now `pip install sentro-sdk` and import the integrations directly.
-- **@sentro/sdk 0.1.2 on npm** — adds `@sentro/sdk/vercel-ai` subpath export for the Vercel AI SDK telemetry middleware. Users can now `npm install @sentro/sdk` and `import { sentroMiddleware } from '@sentro/sdk/vercel-ai'`.
-
-### Changed
-- Removed stale duplicate `packages/integrations/vercel-ai/` folder — the integration now lives in `packages/sdk/src/integrations/vercel-ai.ts` and ships as a subpath export of `@sentro/sdk`.
-
-## [0.1.1] - 2026-04-14
+## [0.1.1] - 2026-03-01
 
 ### Added
-- **OpenTelemetry (OTLP) ingestion** — new endpoint `POST /api/v1/traces` accepts OTLP/HTTP JSON traces. Works with any OTEL-instrumented app (OpenLLMetry, Traceloop, OpenInference, raw OTEL SDK). Translates spans to Sentro's native event format and feeds through existing processor. No SDK required.
-- **Framework integrations** — built-in adapters for Claude Code (shell hooks), OpenClaw (SKILL.md), LangChain (AgentMiddleware), CrewAI (BaseEventListener), Vercel AI SDK (telemetry middleware)
-- **One-line installers** — `curl ... /install.sh | bash` for Claude Code and OpenClaw
-
-### Infrastructure
-- **GitHub Actions CI** — runs TypeScript SDK tests, Python SDK tests, Next.js build with Postgres, and `npm audit` on every push and PR
-- **CORS middleware** — `/api/ingest` now accepts cross-origin requests from any origin, enabling browser-based SDKs
-- **CONTRIBUTING.md** — development setup guide, project structure, testing instructions, and contribution workflow
-
-### Security
-- **SSRF protection** — webhook and alert URLs are now validated against private/reserved IP ranges (127.0.0.0/8, 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 169.254.0.0/16), localhost, and non-HTTP protocols
-- **Login rate limiting** — 5 attempts per IP per 15-minute window with 429 responses and Retry-After headers
-- **Setup race condition fix** — unique constraint catch prevents creating multiple admin accounts on concurrent requests
-- **Ingest validation** — event objects limited to 50 fields to prevent payload abuse
-- **Session cleanup** — expired sessions now pruned by the nightly cleanup job
-- **Docker credentials** — `docker-compose.yml` now uses env var substitution instead of hardcoded passwords
-- **.dockerignore** — prevents `.env`, `.git`, and `node_modules` from leaking into Docker images
-
-### Added
-- **Python SDK published to PyPI** — `pip install sentro-sdk` (zero dependencies, context managers, async support, 23 tests)
-- **TypeScript SDK published to npm** — `npm install @sentro/sdk` (batched transport, trace wrapper API, 21 tests)
-- **Code coverage** — TypeScript SDK at 96%, Python SDK at 94%, with 80% thresholds enforced
-- **Event webhooks** — 5 event types (`error.new`, `error.regression`, `run.failed`, `run.completed`, `cost.spike`), HMAC-SHA256 signing, filters, management dashboard
-- **Documentation** — full HTML docs with Python SDK section, Event Webhooks section, updated roadmap
-- **npm/PyPI badges** and coverage badges in README
-
-### Changed
-- Version bumped to 0.1.1 across both SDKs
-- Hero badge updated from v0.1.0 to v1.0.0 in docs
-
-## [0.1.0] - 2026-04-13
-
-### Added
-- Initial release
-- Next.js 15 dashboard with issues, agent runs, step replay, performance, and alerts pages
-- PostgreSQL schema with agent observability hierarchy (run → step → tool_call / llm_call)
-- TypeScript SDK with explicit and wrapper trace APIs
-- Python SDK with context managers
-- Ingest endpoint with rate limiting and batched processing
-- Alert rules (error_spike, failure_rate, cost_threshold) with webhook notifications
-- pg-boss background jobs for alert checking and data cleanup
-- Docker Compose deployment (app + postgres)
-- Admin auth with bcrypt password hashing and session cookies
+- TypeScript SDK on [npm](https://www.npmjs.com/package/@sentro/sdk)
+- Python SDK on [PyPI](https://pypi.org/project/sentro-sdk/)
+- Code coverage: TS 96%, Python 94%
+- Event webhooks (5 event types, HMAC signing, filters)
+- Security hardening: SSRF protection, rate limiting, session cleanup
+- GitHub Actions CI pipeline
+- CORS middleware for cross-origin SDKs
+- Framework integrations: Claude Code, OpenClaw, LangChain, CrewAI, Vercel AI SDK
+- One-line installers for Claude Code and OpenClaw
+- OTLP ingestion — accept OpenTelemetry traces at `/api/v1/traces`
