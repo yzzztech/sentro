@@ -1,4 +1,22 @@
 import { resolve4, resolve6 } from "node:dns/promises";
+import { isIP } from "node:net";
+
+/**
+ * Checks if a string is a valid IP address (v4 or v6).
+ */
+function isIpAddress(str: string): boolean {
+  return isIP(str) !== 0;
+}
+
+/**
+ * Strips brackets from an IPv6 address (e.g., "[::1]" → "::1").
+ */
+function unwrapBrackets(ip: string): string {
+  if (ip.startsWith("[") && ip.endsWith("]")) {
+    return ip.slice(1, -1);
+  }
+  return ip;
+}
 
 /**
  * Validates a webhook URL to prevent SSRF attacks.
@@ -19,7 +37,8 @@ export async function validateWebhookUrl(
     return { valid: false, error: "Only http and https protocols are allowed" };
   }
 
-  const hostname = parsed.hostname;
+  const rawHostname = parsed.hostname;
+  const hostname = unwrapBrackets(rawHostname);
 
   // Block localhost by name
   if (
@@ -29,18 +48,25 @@ export async function validateWebhookUrl(
     return { valid: false, error: "Localhost URLs are not allowed" };
   }
 
+  // If hostname is already an IP address, check it directly (no DNS needed)
+  if (isIpAddress(hostname)) {
+    if (isBlockedIP(hostname)) {
+      return {
+        valid: false,
+        error: "URL resolves to a private or reserved IP address",
+      };
+    }
+    return { valid: true };
+  }
+
   // Resolve hostname to IPs and check against blocked ranges
   let ips: string[] = [];
-  try {
-    const [ipv4, ipv6] = await Promise.allSettled([
-      resolve4(hostname),
-      resolve6(hostname),
-    ]);
-    if (ipv4.status === "fulfilled") ips.push(...ipv4.value);
-    if (ipv6.status === "fulfilled") ips.push(...ipv6.value);
-  } catch {
-    return { valid: false, error: "Could not resolve hostname" };
-  }
+  const [ipv4, ipv6] = await Promise.allSettled([
+    resolve4(hostname),
+    resolve6(hostname),
+  ]);
+  if (ipv4.status === "fulfilled") ips.push(...ipv4.value);
+  if (ipv6.status === "fulfilled") ips.push(...ipv6.value);
 
   if (ips.length === 0) {
     return { valid: false, error: "Could not resolve hostname" };
