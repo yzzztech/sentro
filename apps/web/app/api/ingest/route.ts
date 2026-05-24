@@ -1,91 +1,70 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/db/prisma";
-import { validatePayload } from "@/lib/ingestion/validate";
-import { addToBatch, startFlushTimer } from "@/lib/ingestion/buffer";
+import { prisma } from "@repo/db";
+import { processIngestBatch } from "@repo/agent-runner";
+import { authRateLimit } from "@repo/security";
 
-// Start flush timer on first import
-startFlushTimer();
+export async function POST(request: NextRequest) {
+  const authHeader = request.headers.get("authorization");
+  const bearerToken = authHeader?.startsWith("Bearer ")
+    ? authHeader.slice(7)
+    : null;
 
-const RATE_LIMIT_WINDOW_MS = 60 * 1000;
-
-async function checkRateLimit(dsnToken: string, limitPerMinute: number): Promise<boolean> {
-  const now = new Date();
-  const windowKey = `ingest:${dsnToken}`;
-  const resetAt = new Date(now.getTime() + RATE_LIMIT_WINDOW_MS);
-
+  let body: any;
   try {
-    const result = await prisma.rateLimitWindow.upsert({
-      where: { key: windowKey },
-      create: {
-        key: windowKey,
-        count: 1,
-        resetAt,
-      },
-      update: {
-        count: { increment: 1 },
-      },
-      select: { count: true, resetAt: true },
-    });
-
-    // If the window has expired, reset the counter
-    if (result.resetAt < now) {
-      await prisma.rateLimitWindow.update({
-        where: { key: windowKey },
-        data: { count: 1, resetAt },
-      });
-      return true;
-    }
-
-    return result.count <= limitPerMinute;
-  } catch {
-    // DB failure — fall back to allowing the request (fail-open)
-    return true;
-  }
-}
-
-export async function POST(req: NextRequest) {
-  let body: unknown;
-  try {
-    body = await req.json();
+    body = await request.json();
   } catch {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  // Validate payload
-  const validation = validatePayload(body);
-  if (!validation.success) {
-    return NextResponse.json({ error: validation.error }, { status: 400 });
+  const rawDsn: string | undefined = body.dsn;
+
+  // ── Fix: extract token from DSN URL if full URL is passed ──
+  // The dsn field can be either:
+  //   1. A plain token: "abc123..."
+  //   2. A full DSN URL: "http://TOKEN@host:port/api/ingest/PROJECT_ID"
+  // The official Claude Code hook sends the full URL, so we must
+  // parse the token out of it.  Precedence:
+  //   Bearer header  >  token extracted from dsn URL  >  plain dsn
+  let dsnFromUrl: string | undefined;
+  if (rawDsn?.includes("@")) {
+    const match = rawDsn.match(/:\/\/([^@]+)@/);
+    dsnFromUrl = match?.[1];
   }
+  const dsnToken = bearerToken || dsnFromUrl || rawDsn;
+  // ──────────────────────────────────────────────────────
 
-  const { dsn, batch } = validation.data;
-
-  // Check Authorization header for Bearer token
-  const authHeader = req.headers.get("authorization");
-  const bearerToken = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
-
-  // DSN token can come from payload or Authorization header
-  const dsnToken = dsn || bearerToken;
   if (!dsnToken) {
-    return NextResponse.json({ error: "DSN token is required" }, { status: 401 });
+    return NextResponse.json({ error: "Missing DSN token" }, { status: 401 });
   }
 
-  // Look up project by DSN token
-  const project = await prisma.project.findUnique({ where: { dsnToken } });
+  // Rate-limit by DSN token (500 req/min per project)
+  const rateLimitOk = await authRateLimit(dsnToken, 500, 60_000);
+  if (!rateLimitOk) {
+    return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
+  }
+
+  const project = await prisma.project.findUnique({
+    where: { dsnToken },
+    select: { id: true, rateLimitPerMinute: true },
+  });
+
   if (!project) {
     return NextResponse.json({ error: "Invalid DSN token" }, { status: 401 });
   }
 
-  // Check rate limit (DB-backed, survives restarts)
-  const allowed = await checkRateLimit(dsnToken, project.rateLimitPerMinute);
-  if (!allowed) {
-    return NextResponse.json(
-      { error: "Rate limit exceeded. Try again later." },
-      { status: 429 }
-    );
+  const batch = body.batch ?? [body];
+  if (!Array.isArray(batch) || batch.length === 0) {
+    return NextResponse.json({ error: "Empty or missing batch" }, { status: 400 });
   }
 
-  // Add events to buffer
-  addToBatch(dsnToken, batch as Record<string, unknown>[]);
-
-  return NextResponse.json({ accepted: batch.length }, { status: 202 });
+  try {
+    await processIngestBatch(project.id, batch);
+    return NextResponse.json({ ok: true, count: batch.length });
+  } catch (err: any) {
+    console.error("Ingest batch failed:", err);
+    return NextResponse.json(
+      { error: "Internal server error", detail: err?.message },
+      { status: 500 }
+    );
+  }
 }
