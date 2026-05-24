@@ -2,6 +2,11 @@
 
 All notable changes to Sentro are documented here.
 
+## [0.2.1] - 2026-05-24
+
+### Fixed
+- **DSN token precedence bug (#1)** — When a client sends the full DSN URL in the JSON body's `dsn` field (as the Claude Code hook does), the full URL shadowed the Bearer token, causing all events to be silently dropped with `401 Invalid DSN token`. Now extracts the token from URL-shaped DSNs with correct precedence: Bearer > token_from_url > plain_dsn.
+
 ## [0.2.0] - 2026-04-14
 
 ### Added
