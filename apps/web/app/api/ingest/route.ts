@@ -63,8 +63,19 @@ export async function POST(req: NextRequest) {
   const authHeader = req.headers.get("authorization");
   const bearerToken = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
 
-  // DSN token can come from payload or Authorization header
-  const dsnToken = dsn || bearerToken;
+  // ── Fix: parse token from DSN URL if full URL is passed ──
+  // The dsn field can be either:
+  //   1. A plain token: "abc123..."
+  //   2. A full DSN URL: "http://TOKEN@host:port/api/ingest/PROJECT_ID"
+  // Precedence: Bearer header > token from URL > plain dsn
+  let dsnFromUrl: string | undefined;
+  if (typeof dsn === "string" && dsn.includes("@")) {
+    const match = dsn.match(/:\/\/([^@]+)@/);
+    dsnFromUrl = match?.[1];
+  }
+  const dsnToken = bearerToken || dsnFromUrl || (typeof dsn === "string" ? dsn : undefined);
+  // ────────────────────────────────────────────────
+
   if (!dsnToken) {
     return NextResponse.json({ error: "DSN token is required" }, { status: 401 });
   }
