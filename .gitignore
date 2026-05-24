@@ -11,3 +11,4 @@ coverage.json
 .coverage
 htmlcov/
 .gstack/
+__pycache__/
