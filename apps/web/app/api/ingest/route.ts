@@ -6,25 +6,41 @@ import { addToBatch, startFlushTimer } from "@/lib/ingestion/buffer";
 // Start flush timer on first import
 startFlushTimer();
 
-// In-memory rate limiter: Map<dsnToken, { count: number; resetAt: number }>
-const rateLimitStore = new Map<string, { count: number; resetAt: number }>();
 const RATE_LIMIT_WINDOW_MS = 60 * 1000;
 
-function checkRateLimit(dsnToken: string, limitPerMinute: number): boolean {
-  const now = Date.now();
-  const entry = rateLimitStore.get(dsnToken);
+async function checkRateLimit(dsnToken: string, limitPerMinute: number): Promise<boolean> {
+  const now = new Date();
+  const windowKey = `ingest:${dsnToken}`;
+  const resetAt = new Date(now.getTime() + RATE_LIMIT_WINDOW_MS);
 
-  if (!entry || entry.resetAt < now) {
-    rateLimitStore.set(dsnToken, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+  try {
+    const result = await prisma.rateLimitWindow.upsert({
+      where: { key: windowKey },
+      create: {
+        key: windowKey,
+        count: 1,
+        resetAt,
+      },
+      update: {
+        count: { increment: 1 },
+      },
+      select: { count: true, resetAt: true },
+    });
+
+    // If the window has expired, reset the counter
+    if (result.resetAt < now) {
+      await prisma.rateLimitWindow.update({
+        where: { key: windowKey },
+        data: { count: 1, resetAt },
+      });
+      return true;
+    }
+
+    return result.count <= limitPerMinute;
+  } catch {
+    // DB failure — fall back to allowing the request (fail-open)
     return true;
   }
-
-  if (entry.count >= limitPerMinute) {
-    return false;
-  }
-
-  entry.count += 1;
-  return true;
 }
 
 export async function POST(req: NextRequest) {
@@ -59,8 +75,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid DSN token" }, { status: 401 });
   }
 
-  // Check rate limit
-  const allowed = checkRateLimit(dsnToken, project.rateLimitPerMinute);
+  // Check rate limit (DB-backed, survives restarts)
+  const allowed = await checkRateLimit(dsnToken, project.rateLimitPerMinute);
   if (!allowed) {
     return NextResponse.json(
       { error: "Rate limit exceeded. Try again later." },

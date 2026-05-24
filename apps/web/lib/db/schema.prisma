@@ -424,3 +424,13 @@ model DatasetItem {
   @@index([projectId, datasetId])
   @@map("dataset_items")
 }
+
+model RateLimitWindow {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  count     Int      @default(0)
+  resetAt   DateTime @map("reset_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("rate_limit_windows")
+}
