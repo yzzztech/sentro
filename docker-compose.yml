@@ -1,5 +1,16 @@
 version: "3.8"
 services:
+  migrate:
+    build:
+      context: .
+      target: web-build
+    command: sh -c "cd apps/web && npx prisma db push"
+    environment:
+      DATABASE_URL: "postgresql://${POSTGRES_USER:-sentro}:${POSTGRES_PASSWORD:-sentro}@db:5432/${POSTGRES_DB:-sentro}?schema=public"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
   app:
     build: .
     ports:
