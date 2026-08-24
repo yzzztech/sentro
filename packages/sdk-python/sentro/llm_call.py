@@ -56,6 +56,14 @@ class SentroLlmCall:
         cost: float | None = None,
     ) -> None:
         """End the LLM call with token usage and optional response."""
+        total = None
+        if prompt_tokens is not None and completion_tokens is not None:
+            total = prompt_tokens + completion_tokens
+        elif prompt_tokens is not None:
+            total = prompt_tokens
+        elif completion_tokens is not None:
+            total = completion_tokens
+
         event: dict[str, Any] = {
             "type": "llm_call.end",
             "timestamp": utc_now_iso(),
@@ -64,6 +72,7 @@ class SentroLlmCall:
             "llmCallId": self._llm_call_id,
             "promptTokens": prompt_tokens,
             "completionTokens": completion_tokens,
+            "totalTokens": total,
             "cost": cost,
         }
 
